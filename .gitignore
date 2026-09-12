@@ -1,3 +1,49 @@
+# 微信开发者工具的个人配置
 project.private.config.json
+
+# 依赖与构建产物
+node_modules/
+miniprogram_npm/
+dist/
+build/
+coverage/
+.cache/
+.temp/
+tmp/
+
+# 日志与调试文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.map
+
+# 本地环境配置
+.env
+.env.*
+!.env.example
+
+# 编辑器配置
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python 工具缓存
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 临时文件与本地备份
+*.tmp
+*.temp
+*.bak
+*.orig
+*.backup.json
+
+# 操作系统文件
 .DS_Store
 Thumbs.db
+Desktop.ini
