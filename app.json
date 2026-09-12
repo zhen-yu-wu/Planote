@@ -1,0 +1,51 @@
+{
+  "pages": [
+    "pages/today/index",
+    "pages/inbox/index",
+    "pages/calendar/index",
+    "pages/profile/index",
+    "pages/import/index",
+    "pages/editor/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "我的日序",
+    "navigationBarBackgroundColor": "#F6F7F2",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F6F7F2",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#8A8F85",
+    "selectedColor": "#2F6B4F",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/today/index",
+        "text": "今天",
+        "iconPath": "assets/icons/today-normal.png",
+        "selectedIconPath": "assets/icons/today-active.png"
+      },
+      {
+        "pagePath": "pages/inbox/index",
+        "text": "收集箱",
+        "iconPath": "assets/icons/inbox-normal.png",
+        "selectedIconPath": "assets/icons/inbox-active.png"
+      },
+      {
+        "pagePath": "pages/calendar/index",
+        "text": "日历",
+        "iconPath": "assets/icons/calendar-normal.png",
+        "selectedIconPath": "assets/icons/calendar-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "assets/icons/profile-normal.png",
+        "selectedIconPath": "assets/icons/profile-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

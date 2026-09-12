@@ -1,0 +1,87 @@
+.hero { padding: 18rpx 8rpx 16rpx; animation: hero-fade-in .32s ease-out both; }
+.date { color: #7e857a; font-size: 24rpx; letter-spacing: 1rpx; }
+.greeting { margin-top: 12rpx; font-size: 54rpx; font-weight: 750; line-height: 1.2; letter-spacing: -1rpx; }
+.summary { margin-top: 10rpx; color: #6f766d; font-size: 28rpx; }
+.today-status { margin-top: 22rpx; padding: 20rpx 22rpx 18rpx; border: 1rpx solid rgba(47, 107, 79, .08); border-radius: 22rpx; background: rgba(255, 255, 255, .7); box-shadow: 0 8rpx 24rpx rgba(40, 54, 44, .04); }
+.status-head { display: flex; align-items: center; justify-content: space-between; color: #4e574f; font-size: 24rpx; font-weight: 600; }
+.status-percent { color: #3d7658; font-size: 22rpx; }
+.status-track { height: 9rpx; margin-top: 15rpx; overflow: hidden; border-radius: 8rpx; background: #e6ebe5; }
+.status-fill { height: 100%; border-radius: 8rpx; background: linear-gradient(90deg, #3d7658, #86af94); transition: width .38s ease-out; }
+.status-breakdown { display: flex; align-items: center; margin-top: 13rpx; color: #8a9188; font-size: 21rpx; }
+.status-divider { width: 1rpx; height: 19rpx; margin: 0 16rpx; background: #d9ded8; }
+.focus-rule { color: #9a7b63; font-size: 20rpx; }
+.focus-card { padding: 8rpx 0; overflow: hidden; border-left: 7rpx solid #d36a4a; }
+.focus-row { display: flex; align-items: center; padding: 21rpx 22rpx 21rpx 18rpx; }
+.focus-row + .focus-row { border-top: 1rpx solid #f0f1ed; }
+.priority-dot { width: 13rpx; height: 13rpx; margin-right: 18rpx; border-radius: 50%; background: #e0ae56; }
+.priority-dot.p-3 { background: #d35e49; box-shadow: 0 0 0 7rpx #faece8; }
+.priority-dot.p-1 { background: #79a58c; }
+.focus-main { min-width: 0; flex: 1; }
+.focus-title-line { display: flex; align-items: center; gap: 12rpx; }
+.focus-title { font-weight: 650; }
+.focus-meta { display: flex; align-items: center; gap: 10rpx; margin-top: 7rpx; }
+.urgency-tag { flex: 0 0 auto; padding: 4rpx 9rpx; border-radius: 8rpx; background: #eff1ed; color: #7a8177; font-size: 18rpx; }
+.urgency-2 { background: #fff2df; color: #a66c29; }
+.urgency-3 { background: #ffebe6; color: #bb4e39; }
+.focus-sub { color: #8e7967; font-size: 21rpx; }
+.type-chip { flex: 0 0 auto; padding: 4rpx 10rpx; border-radius: 8rpx; font-size: 18rpx; font-weight: 600; }
+.task-chip { background: #fff1df; color: #a56828; }
+.schedule-chip { background: #e8f0f8; color: #52799d; }
+.row-title-line { display: flex; align-items: center; gap: 12rpx; }
+.row-title-line .task-title { min-width: 0; flex: 1; }
+.focus-check { width: 40rpx; height: 40rpx; margin-left: 12rpx; border: 2rpx solid #c9cdc5; border-radius: 50%; color: transparent; line-height: 36rpx; text-align: center; }
+.focus-check.done { border-color: #6d9980; background: #6d9980; color: white; }
+.overdue-heading { color: #a44f40; }
+.overdue-card { overflow: hidden; border-left: 6rpx solid #ce6652; background: #fffdfc; }
+.overdue-check { border-color: #d8a69c; }
+.overdue-chip { background: #ffebe6; color: #b94e39; }
+.overdue-sub { color: #b06454; }
+.schedule-row { display: flex; align-items: stretch; min-height: 90rpx; padding: 22rpx 20rpx; }
+.schedule-card { overflow: hidden; border-left: 6rpx solid #7898b6; }
+.day-task-card { overflow: hidden; border-left: 6rpx solid #d4a05b; }
+.schedule-row + .schedule-row { border-top: 1rpx solid #eff1ec; }
+.schedule-time { display: flex; flex-direction: column; width: 95rpx; color: #313930; font-size: 25rpx; font-weight: 650; }
+.end-time { margin-top: 5rpx; color: #a0a59c; font-size: 21rpx; font-weight: 400; }
+.timeline { position: relative; width: 34rpx; margin-right: 12rpx; }
+.timeline::after { position: absolute; top: 24rpx; bottom: -46rpx; left: 6rpx; width: 2rpx; background: #dce6ef; content: ''; }
+.schedule-row:last-child .timeline::after { display: none; }
+.timeline-dot { width: 13rpx; height: 13rpx; margin-top: 7rpx; border: 4rpx solid #e1ebf3; border-radius: 50%; background: #6386a6; }
+.schedule-main { min-width: 0; flex: 1; }
+.schedule-row .check { margin-left: 16rpx; margin-right: 0; }
+.compact { padding: 32rpx 20rpx; }
+.view-all { padding: 22rpx; border-top: 1rpx solid #eff1ec; color: #3e785a; text-align: center; font-size: 24rpx; }
+.goals-card { padding: 6rpx 22rpx; }
+.goal-row { padding: 24rpx 0 26rpx; }
+.goal-row + .goal-row { border-top: 1rpx solid #eff1ec; }
+.goal-head { display: flex; justify-content: space-between; align-items: center; }
+.goal-title { font-size: 28rpx; font-weight: 600; }
+.goal-value { color: #5f876f; font-size: 24rpx; font-weight: 650; }
+.goal-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 8rpx; }
+.goal-dates { display: flex; align-items: center; gap: 8rpx; color: #899088; font-size: 21rpx; }
+.goal-calendar { color: #6e917b; font-size: 18rpx; }
+.goal-control-hint { color: #a0a69d; font-size: 18rpx; }
+.progress-track { height: 13rpx; margin-top: 16rpx; overflow: hidden; border-radius: 8rpx; background: #edf0eb; }
+.progress-fill { height: 100%; border-radius: 8rpx; background: linear-gradient(90deg, #3c7658, #82ac91); transform-origin: left center; animation: progress-reveal .58s .18s ease-out both; }
+.interactive-progress { position: relative; box-sizing: border-box; height: 54rpx; overflow: hidden; border: 1rpx solid #dfe5dd; border-radius: 27rpx; background: #edf0eb; }
+.interactive-progress .progress-fill { position: absolute; top: 0; bottom: 0; left: 0; height: 100%; border-radius: 27rpx; opacity: .78; }
+.progress-midline { position: absolute; top: 13rpx; bottom: 13rpx; left: 50%; width: 1rpx; background: rgba(75, 90, 79, .18); }
+.progress-minus, .progress-plus { position: absolute; top: 0; display: flex; align-items: center; height: 54rpx; color: #405b49; font-size: 28rpx; font-weight: 600; line-height: 54rpx; }
+.progress-minus { left: 20rpx; }
+.progress-plus { right: 18rpx; }
+.interactive-progress:active { transform: scaleY(.92); }
+.completed-section { margin-top: 42rpx; padding-top: 24rpx; border-top: 1rpx dashed #d9ddd6; }
+.completed-heading { color: #737b71; font-size: 29rpx; }
+.completed-card { overflow: hidden; background: rgba(255, 255, 255, .72); box-shadow: none; }
+.completed-row { display: flex; align-items: flex-start; padding: 21rpx 22rpx; }
+.completed-row + .completed-row { border-top: 1rpx solid #eff1ec; }
+.restore-hint { padding: 7rpx 2rpx 10rpx 18rpx; color: #779181; font-size: 22rpx; }
+
+@keyframes hero-fade-in {
+  from { opacity: 0; transform: translateY(-8rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes progress-reveal {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

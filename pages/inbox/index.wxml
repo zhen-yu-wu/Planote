@@ -1,0 +1,28 @@
+<view class="page-shell inbox-shell">
+  <scroll-view class="filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="filter-list">
+      <view wx:for="{{filters}}" wx:key="key" class="filter {{filter === item.key ? 'active' : ''}}" data-key="{{item.key}}" bindtap="setFilter">{{item.label}}</view>
+    </view>
+  </scroll-view>
+  <view class="scope-list" wx:if="{{filter === 'todo'}}">
+    <view wx:for="{{scopes}}" wx:key="key" class="scope {{scope === item.key ? 'active' : ''}}" data-key="{{item.key}}" bindtap="setScope">{{item.label}}</view>
+  </view>
+
+  <view class="list-toolbar"><text class="item-count">{{items.length}} 条记录</text><view class="sort-control" bindtap="chooseSort">{{sortLabel}} <text>⌄</text></view></view>
+  <view class="card item-list" wx:if="{{items.length}}">
+    <block wx:for="{{items}}" wx:key="id">
+      <view class="date-group" wx:if="{{item.showDateGroup}}">{{item.dateGroupText}}</view>
+      <view class="inbox-row" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showActions">
+        <view class="check {{item.type === 'idea' ? 'idea-check' : ''}} {{item.completed ? 'done' : ''}}" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+        <view class="task-main">
+          <view class="row-top"><text class="task-title {{item.completed ? 'done' : ''}}">{{item.title}}</text><text class="type-badge type-{{item.type}}">{{item.typeLabel}}</text></view>
+          <view class="task-sub" wx:if="{{item.timeText}}">{{item.timeText}}</view>
+          <view class="content-preview" wx:if="{{item.content}}">{{item.content}}</view>
+        </view>
+        <view class="more" data-id="{{item.id}}" catchtap="showActions">···</view>
+      </view>
+    </block>
+  </view>
+  <view class="empty-state" wx:else><view class="empty-icon">⌁</view><view>这里还没有记录</view><view class="muted">点击右下角，快速记下第一件事</view></view>
+</view>
+<view class="fab" role="button" aria-label="快速新增" bindtap="quickAdd">＋</view>

@@ -1,0 +1,26 @@
+<view class="page-shell profile-shell">
+  <view class="brand-card card">
+    <view class="brand-mark"><view class="mark-accent"></view><text>序</text></view>
+    <view><view class="brand-name">我的日序</view><view class="brand-sub">把注意力留给重要的事</view></view>
+  </view>
+
+  <view class="stats-card card">
+    <view class="stat"><text class="stat-value">{{active}}</text><text class="stat-label">进行中</text></view>
+    <view class="stat"><text class="stat-value">{{completed}}</text><text class="stat-label">已完成</text></view>
+    <view class="stat"><text class="stat-value">{{total}}</text><text class="stat-label">全部记录</text></view>
+  </view>
+
+  <view class="section">
+    <view class="section-head"><text class="section-title">数据管理</text></view>
+    <view class="card menu-card">
+      <view class="menu-row" bindtap="exportData"><view><view>导出备份</view><view class="menu-sub">将本地数据复制为 JSON</view></view><text>›</text></view>
+      <view class="menu-row" bindtap="importData"><view><view>导入备份</view><view class="menu-sub">粘贴 JSON 内容并确认导入</view></view><text>›</text></view>
+      <view class="menu-row danger" bindtap="clearData"><view><view>清空全部数据</view><view class="menu-sub">永久删除本机中的全部记录</view></view><text>›</text></view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="card menu-card"><view class="menu-row" bindtap="showAbout"><view>关于我的日序</view><text>›</text></view></view>
+  </view>
+  <view class="local-note">数据仅保存在当前微信设备中</view>
+</view>

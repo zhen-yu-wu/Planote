@@ -1,0 +1,19 @@
+.profile-shell { padding-top: 36rpx; }
+.brand-card { display: flex; align-items: center; padding: 32rpx; }
+.brand-mark { position: relative; display: flex; align-items: center; justify-content: center; width: 82rpx; height: 82rpx; margin-right: 22rpx; overflow: hidden; border: 1rpx solid #cedfd3; border-radius: 24rpx; background: linear-gradient(145deg, #edf6ef, #dcebe1); color: #2f6b4f; font-size: 36rpx; font-weight: 700; box-shadow: 0 7rpx 18rpx rgba(47, 107, 79, .1); }
+.brand-mark text { position: relative; z-index: 1; }
+.mark-accent { position: absolute; top: -18rpx; right: -14rpx; width: 50rpx; height: 50rpx; border-radius: 50%; background: rgba(75, 137, 99, .14); }
+.brand-name { font-size: 37rpx; font-weight: 750; letter-spacing: .5rpx; }
+.brand-sub { margin-top: 6rpx; color: #8a9187; font-size: 23rpx; }
+.stats-card { display: flex; margin-top: 24rpx; padding: 28rpx 6rpx; }
+.stat { position: relative; display: flex; flex: 1; flex-direction: column; align-items: center; }
+.stat + .stat::before { position: absolute; top: 5rpx; bottom: 5rpx; left: 0; width: 1rpx; background: #eceee9; content: ''; }
+.stat-value { font-size: 38rpx; font-weight: 700; }
+.stat-label { margin-top: 6rpx; color: #92988f; font-size: 22rpx; }
+.menu-card { overflow: hidden; }
+.menu-row { display: flex; align-items: center; justify-content: space-between; min-height: 100rpx; padding: 0 24rpx; }
+.menu-row + .menu-row { border-top: 1rpx solid #eff1ec; }
+.menu-row > text { color: #abb0a8; font-size: 39rpx; }
+.menu-sub { margin-top: 6rpx; color: #9a9f97; font-size: 21rpx; }
+.menu-row.danger { color: #b95342; }
+.local-note { margin-top: 48rpx; color: #a5aaa2; text-align: center; font-size: 22rpx; }

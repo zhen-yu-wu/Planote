@@ -1,0 +1,105 @@
+<view class="page-shell">
+  <view class="hero">
+    <view class="date">{{dateText}}</view>
+    <view class="greeting">{{greeting}}</view>
+    <view class="summary">{{summaryText}}</view>
+    <view class="today-status">
+      <view class="status-head"><text>今日已处理 {{handledToday}} / {{todayTotal}}</text><text class="status-percent">{{todayProgress}}%</text></view>
+      <view class="status-track"><view class="status-fill" style="width: {{todayProgress}}%"></view></view>
+      <view class="status-breakdown"><text>日任务 {{dayDone}} / {{dayTotal}}</text><view class="status-divider"></view><text>日程 {{scheduleDone}} / {{scheduleTotal}}</text></view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{focus.length}}">
+    <view class="section-head">
+      <text class="section-title">今日重点</text>
+      <text class="focus-rule">逾期 · 紧急度 · 截止时间</text>
+    </view>
+    <view class="card focus-card">
+      <view class="focus-row {{completingId === item.id ? 'finishing' : ''}}" wx:for="{{focus}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
+        <view class="priority-dot p-{{item.urgency}}"></view>
+        <view class="focus-main">
+          <view class="focus-title-line"><text class="focus-title">{{item.title}}</text><text class="type-chip task-chip">{{item.scopeText}}</text></view>
+          <view class="focus-meta"><text class="urgency-tag urgency-{{item.urgency}}">{{item.urgencyText}}</text><text class="focus-sub">{{item.subText}}</text></view>
+        </view>
+        <view class="focus-check {{item.completed ? 'done' : ''}}" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{overdueTodos.length}}">
+    <view class="section-head"><text class="section-title overdue-heading">其余逾期任务</text><text class="section-meta">{{overdueTodos.length}} 项</text></view>
+    <view class="card overdue-card">
+      <view class="task-row {{completingId === item.id ? 'finishing' : ''}}" wx:for="{{overdueTodos}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
+        <view class="check overdue-check" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+        <view class="task-main">
+          <view class="row-title-line"><view class="task-title">{{item.title}}</view><text class="type-chip overdue-chip">{{item.scopeText}}</text></view>
+          <view class="task-sub overdue-sub">{{item.subText}}</view>
+        </view>
+        <view class="more" data-id="{{item.id}}" catchtap="showItemActions">···</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{schedules.length}}">
+    <view class="section-head"><text class="section-title">今日日程</text><text class="section-meta">按开始时间</text></view>
+    <view class="card schedule-card">
+      <view class="schedule-row {{completingId === item.id ? 'finishing' : ''}}" wx:for="{{schedules}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
+        <view class="schedule-time"><text>{{item.startTime || '全天'}}</text><text class="end-time">{{item.endTime}}</text></view>
+        <view class="timeline"><view class="timeline-dot"></view></view>
+        <view class="schedule-main"><view class="row-title-line"><view class="task-title {{item.completed ? 'done' : ''}}">{{item.title}}</view><text class="type-chip schedule-chip">日程</text></view><view class="task-sub" wx:if="{{item.content}}">{{item.content}}</view></view>
+        <view class="check {{item.completed ? 'done' : ''}}" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{dayTodos.length}}">
+    <view class="section-head"><text class="section-title">其余日任务</text><text class="section-meta">{{dayTodos.length}} 项</text></view>
+    <view class="card day-task-card">
+      <view class="task-row {{completingId === item.id ? 'finishing' : ''}}" wx:for="{{dayTodos}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
+        <view class="check {{item.completed ? 'done' : ''}}" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+        <view class="task-main"><view class="row-title-line"><view class="task-title {{item.completed ? 'done' : ''}}">{{item.title}}</view><text class="type-chip task-chip">日任务</text></view><view class="task-sub" wx:if="{{item.subText}}">{{item.subText}}</view></view>
+        <view class="more" data-id="{{item.id}}" catchtap="showItemActions">···</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{weekTodos.length}}">
+    <view class="section-head"><text class="section-title">本周任务</text><text class="section-meta">已完成 {{weekDone}} / {{weekTotal}}</text></view>
+    <view class="card">
+      <view class="task-row {{completingId === item.id ? 'finishing' : ''}}" wx:for="{{weekTodos}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
+        <view class="check {{item.completed ? 'done' : ''}}" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+        <view class="task-main"><view class="task-title {{item.completed ? 'done' : ''}}">{{item.title}}</view><view class="task-sub">{{item.subText}}</view></view>
+      </view>
+      <view class="view-all" wx:if="{{weekTotal > 5}}" bindtap="viewAllWeek">查看全部 {{weekTotal}} 项</view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{yearTodos.length}}">
+    <view class="section-head"><text class="section-title">年度目标</text><text class="section-meta">长期推进</text></view>
+    <view class="card goals-card">
+      <view class="goal-row" wx:for="{{yearTodos}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
+        <view class="goal-head"><text class="goal-title">{{item.title}}</text><text class="goal-value">{{item.progress === null ? '—' : item.progress + '%'}}</text></view>
+        <view class="goal-meta"><view class="goal-dates"><text class="goal-calendar">▣</text><text>{{item.yearRangeText}}</text></view><text class="goal-control-hint">左减 · 右加</text></view>
+        <view class="progress-track interactive-progress goal-progress-{{index}}" data-id="{{item.id}}" data-index="{{index}}" catchtap="changeGoalProgress">
+          <view class="progress-fill" style="width: {{item.displayProgress}}%"></view>
+          <view class="progress-midline"></view>
+          <text class="progress-minus">−</text>
+          <text class="progress-plus">＋</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section completed-section" wx:if="{{completedToday.length}}">
+    <view class="section-head"><text class="section-title completed-heading">今日已完成</text><text class="section-meta">{{completedToday.length}} 项</text></view>
+    <view class="card completed-card">
+      <view class="completed-row" wx:for="{{completedToday}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
+        <view class="check done" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+        <view class="task-main"><view class="task-title done">{{item.title}}</view><view class="task-sub">{{item.subText}}</view></view>
+        <text class="restore-hint" data-id="{{item.id}}" catchtap="toggleCompleted">恢复</text>
+      </view>
+    </view>
+  </view>
+</view>
+<view class="fab" role="button" aria-label="快速新增" bindtap="quickAdd">＋</view>

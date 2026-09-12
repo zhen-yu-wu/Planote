@@ -1,0 +1,40 @@
+.calendar-shell { padding-top: 24rpx; }
+.calendar-card { padding: 24rpx 18rpx 28rpx; }
+.month-head { display: flex; align-items: center; justify-content: space-between; padding: 2rpx 8rpx 24rpx; }
+.month-title { font-size: 32rpx; font-weight: 700; }
+.month-arrow { width: 64rpx; height: 58rpx; border-radius: 16rpx; color: #637068; text-align: center; font-size: 48rpx; line-height: 50rpx; }
+.month-arrow:active { background: #eef0eb; }
+.week-head, .day-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.week-head text { padding-bottom: 17rpx; color: #a0a69d; text-align: center; font-size: 21rpx; }
+.day-cell { box-sizing: border-box; height: 96rpx; padding-top: 5rpx; border-radius: 17rpx; text-align: center; }
+.day-cell.selected { background: #e7f0ea; }
+.day-number { display: inline-flex; align-items: center; justify-content: center; width: 46rpx; height: 46rpx; border-radius: 50%; font-size: 24rpx; }
+.day-number.today { background: #2f6b4f; color: white; font-weight: 650; }
+.day-number.weekend { color: #ba725e; }
+.holiday-label { height: 22rpx; margin-top: -1rpx; overflow: hidden; color: #a57b45; font-size: 16rpx; line-height: 22rpx; white-space: nowrap; }
+.holiday-rest { color: #ca5948; font-weight: 600; }
+.holiday-work { color: #5c7693; font-weight: 600; }
+.holiday-festival { color: #a77b3f; }
+.dots { display: flex; justify-content: center; gap: 6rpx; height: 9rpx; margin-top: 2rpx; }
+.dot { width: 7rpx; height: 7rpx; border-radius: 50%; }
+.schedule-dot { background: #5d83a7; }
+.todo-dot { background: #d08246; }
+.calendar-item { display: flex; align-items: flex-start; padding: 24rpx 22rpx; }
+.calendar-item + .calendar-item { border-top: 1rpx solid #eff1ec; }
+.item-color { width: 7rpx; height: 56rpx; margin-right: 18rpx; border-radius: 5rpx; background: #d2a25e; }
+.color-schedule { background: #6c8eae; }
+.color-todo { background: #d27b4d; }
+.calendar-item .check + .item-color { display: none; }
+.holiday-banner { display: flex; align-items: center; margin-bottom: 16rpx; padding: 20rpx 22rpx; border: 1rpx solid #f0dfc6; border-radius: 22rpx; background: linear-gradient(135deg, #fff9ed, #fff3df); }
+.holiday-banner-rest { border-color: #f0d7d0; background: linear-gradient(135deg, #fff7f3, #ffede7); }
+.holiday-banner-work { border-color: #dce5ed; background: linear-gradient(135deg, #f6f9fc, #eaf1f7); }
+.holiday-mark { display: flex; align-items: center; justify-content: center; width: 58rpx; height: 58rpx; margin-right: 18rpx; border-radius: 18rpx; background: rgba(255, 255, 255, .75); color: #b46b3d; font-size: 26rpx; font-weight: 700; }
+.holiday-banner-rest .holiday-mark { color: #c45743; }
+.holiday-banner-work .holiday-mark { color: #537594; }
+.holiday-main { min-width: 0; flex: 1; }
+.holiday-name { color: #5c4b36; font-size: 27rpx; font-weight: 700; }
+.holiday-description { margin-top: 5rpx; color: #967b5c; font-size: 21rpx; line-height: 1.4; }
+.holiday-banner-rest .holiday-name { color: #734d45; }
+.holiday-banner-rest .holiday-description { color: #9b6c62; }
+.holiday-banner-work .holiday-name { color: #4b6175; }
+.holiday-banner-work .holiday-description { color: #74899c; }

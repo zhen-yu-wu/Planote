@@ -1,0 +1,67 @@
+<view class="editor-shell">
+  <view class="segmented type-tabs">
+    <view class="segment {{form.type === 'idea' ? 'active' : ''}}" data-value="idea" bindtap="chooseType">想法</view>
+    <view class="segment {{form.type === 'todo' ? 'active' : ''}}" data-value="todo" bindtap="chooseType">任务</view>
+    <view class="segment {{form.type === 'schedule' ? 'active' : ''}}" data-value="schedule" bindtap="chooseType">日程</view>
+  </view>
+
+  <view class="form-card">
+    <input class="title-input" maxlength="80" placeholder="要记下什么？" value="{{form.title}}" data-field="title" bindinput="setField" focus="{{!isEdit}}" />
+    <textarea class="content-input" maxlength="1000" auto-height placeholder="补充说明（可选）" value="{{form.content}}" data-field="content" bindinput="setField"></textarea>
+  </view>
+
+  <view wx:if="{{form.type === 'todo'}}">
+    <view class="field-label">任务层级</view>
+    <view class="segmented scope-tabs">
+      <view class="segment {{form.taskScope === 'day' ? 'active' : ''}}" data-value="day" bindtap="chooseScope">日任务</view>
+      <view class="segment {{form.taskScope === 'week' ? 'active' : ''}}" data-value="week" bindtap="chooseScope">周任务</view>
+      <view class="segment {{form.taskScope === 'year' ? 'active' : ''}}" data-value="year" bindtap="chooseScope">年任务</view>
+    </view>
+
+    <view class="form-card fields" wx:if="{{form.taskScope === 'day'}}">
+      <picker mode="date" value="{{form.date}}" data-field="date" bindchange="setField"><view class="field-row"><text>所属日期</text><text class="field-value">{{form.date || '请选择'}} ›</text></view></picker>
+      <picker mode="date" value="{{form.deadlineDate}}" data-field="deadlineDate" bindchange="setField"><view class="field-row"><text>截止日期</text><text class="field-value">{{form.deadlineDate || '不设置'}} ›</text></view></picker>
+      <picker mode="time" value="{{form.deadlineTime}}" data-field="deadlineTime" bindchange="setField"><view class="field-row"><text>截止时间</text><text class="field-value">{{form.deadlineTime || '不设置'}} ›</text></view></picker>
+    </view>
+
+    <view class="form-card fields" wx:if="{{form.taskScope === 'week'}}">
+      <picker mode="date" value="{{form.weekStartDate}}" bindchange="onWeekStartChange"><view class="field-row"><text>所属周</text><text class="field-value">{{form.weekYear}} 年第 {{form.weekNumber}} 周 ›</text></view></picker>
+      <view class="field-row"><text>日期范围</text><text class="field-value plain">{{form.weekStartDate}} 至 {{form.weekEndDate}}</text></view>
+      <picker mode="date" value="{{form.deadlineDate}}" data-field="deadlineDate" bindchange="setField"><view class="field-row"><text>截止日期</text><text class="field-value">{{form.deadlineDate || '不设置'}} ›</text></view></picker>
+    </view>
+
+    <view class="form-card fields" wx:if="{{form.taskScope === 'year'}}">
+      <picker mode="date" fields="year" value="{{form.year}}-01-01" bindchange="onYearChange"><view class="field-row"><text>目标年份</text><text class="field-value">{{form.year}} 年 ›</text></view></picker>
+      <view class="year-range-row">
+        <picker class="range-picker" mode="date" value="{{form.yearStartDate}}" start="{{form.year}}-01-01" end="{{form.year}}-12-31" data-field="yearStartDate" bindchange="setField"><view class="range-cell"><text class="range-label">开始日期</text><text class="range-value">{{form.yearStartDate || '请选择'}}</text></view></picker>
+        <text class="range-arrow">→</text>
+        <picker class="range-picker" mode="date" value="{{form.yearEndDate}}" start="{{form.year}}-01-01" end="{{form.year}}-12-31" data-field="yearEndDate" bindchange="setField"><view class="range-cell"><text class="range-label">结束日期</text><text class="range-value">{{form.yearEndDate || '请选择'}}</text></view></picker>
+      </view>
+      <view class="progress-field">
+        <view class="progress-label"><text>当前进度</text><text>{{form.progress === null ? '未设置' : form.progress + '%'}}</text></view>
+        <slider min="0" max="100" step="5" value="{{form.progress || 0}}" activeColor="#397356" backgroundColor="#E7EAE4" block-size="20" bindchange="setProgress" />
+      </view>
+    </view>
+
+    <view class="field-label">优先程度</view>
+    <view class="form-card fields">
+      <view class="priority-row"><text>紧急程度</text><view class="level-group"><view wx:for="{{urgencyLabels}}" wx:key="*this" class="level {{form.urgency === index + 1 ? 'selected level-' + (index + 1) : ''}}" data-value="{{index + 1}}" bindtap="setUrgency">{{item}}</view></view></view>
+      <view class="priority-row"><text>重要程度</text><view class="level-group"><view wx:for="{{importanceLabels}}" wx:key="*this" class="level {{form.importance === index + 1 ? 'selected level-' + (index + 1) : ''}}" data-value="{{index + 1}}" bindtap="setImportance">{{item}}</view></view></view>
+    </view>
+  </view>
+
+  <view class="form-card fields" wx:if="{{form.type === 'schedule'}}">
+    <picker mode="date" value="{{form.date}}" data-field="date" bindchange="setField"><view class="field-row"><text>日期</text><text class="field-value">{{form.date || '请选择'}} ›</text></view></picker>
+    <picker mode="time" value="{{form.startTime}}" data-field="startTime" bindchange="setField"><view class="field-row"><text>开始时间</text><text class="field-value">{{form.startTime || '请选择'}} ›</text></view></picker>
+    <picker mode="time" value="{{form.endTime}}" data-field="endTime" bindchange="setField"><view class="field-row"><text>结束时间</text><text class="field-value">{{form.endTime || '请选择'}} ›</text></view></picker>
+    <view class="priority-row"><text>紧急程度</text><view class="level-group"><view wx:for="{{urgencyLabels}}" wx:key="*this" class="level {{form.urgency === index + 1 ? 'selected level-' + (index + 1) : ''}}" data-value="{{index + 1}}" bindtap="setUrgency">{{item}}</view></view></view>
+    <view class="priority-row"><text>重要程度</text><view class="level-group"><view wx:for="{{importanceLabels}}" wx:key="*this" class="level {{form.importance === index + 1 ? 'selected level-' + (index + 1) : ''}}" data-value="{{index + 1}}" bindtap="setImportance">{{item}}</view></view></view>
+  </view>
+
+  <view class="form-card fields">
+    <view class="field-row"><text>已完成</text><switch checked="{{form.completed}}" color="#397356" data-field="completed" bindchange="setBoolean" /></view>
+  </view>
+
+  <button class="save-button" bindtap="save">保存事项</button>
+  <button class="delete-button" wx:if="{{isEdit}}" bindtap="remove">删除事项</button>
+</view>

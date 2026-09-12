@@ -1,0 +1,30 @@
+<view class="page-shell calendar-shell">
+  <view class="calendar-card card">
+    <view class="month-head"><view class="month-arrow" bindtap="previousMonth">‹</view><view class="month-title">{{title}}</view><view class="month-arrow" bindtap="nextMonth">›</view></view>
+    <view class="week-head"><text>日</text><text>一</text><text>二</text><text>三</text><text>四</text><text>五</text><text>六</text></view>
+    <view class="day-grid">
+      <view wx:for="{{days}}" wx:key="key" class="day-cell {{item.blank ? 'blank' : ''}} {{item.selected ? 'selected' : ''}}" data-date="{{item.date}}" bindtap="selectDay">
+        <view class="day-number {{item.isToday ? 'today' : ''}} {{item.isWeekend && !item.isToday ? 'weekend' : ''}}">{{item.day}}</view>
+        <view class="holiday-label holiday-{{item.holidayKind}}" wx:if="{{item.holidayLabel}}">{{item.holidayLabel}}</view>
+        <view class="dots"><view wx:if="{{item.hasSchedule}}" class="dot schedule-dot"></view><view wx:if="{{item.hasTodo}}" class="dot todo-dot"></view></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head"><text class="section-title">{{selectedLabel}}</text><text class="section-meta">{{selectedItems.length}} 项</text></view>
+    <view class="holiday-banner holiday-banner-{{selectedHoliday.kind}}" wx:if="{{selectedHoliday}}">
+      <view class="holiday-mark">{{selectedHoliday.isWorkday ? '班' : selectedHoliday.isRestDay ? '休' : '节'}}</view>
+      <view class="holiday-main"><view class="holiday-name">{{selectedHoliday.name}}</view><view class="holiday-description">{{selectedHoliday.description}}</view></view>
+    </view>
+    <view class="card">
+      <view class="calendar-item" wx:for="{{selectedItems}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem">
+        <view wx:if="{{item.type !== 'idea'}}" class="check {{item.completed ? 'done' : ''}}" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+        <view class="item-color color-{{item.type}}"></view>
+        <view class="task-main"><view class="task-title {{item.completed ? 'done' : ''}}">{{item.title}}</view><view class="task-sub">{{item.timeText}} · {{item.typeLabel}}</view></view>
+      </view>
+      <view class="empty" wx:if="{{!selectedItems.length}}">这一天还没有安排</view>
+    </view>
+  </view>
+</view>
+<view class="fab" role="button" aria-label="快速新增" bindtap="quickAdd">＋</view>

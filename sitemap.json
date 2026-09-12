@@ -1,0 +1,4 @@
+{
+  "desc": "我的日序 sitemap",
+  "rules": [{ "action": "allow", "page": "*" }]
+}

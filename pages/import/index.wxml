@@ -1,0 +1,22 @@
+<view class="import-shell">
+  <view class="intro-card">
+    <view class="intro-icon">↥</view>
+    <view class="intro-main"><view class="intro-title">粘贴备份内容</view><view class="intro-sub">支持“我的日序”导出的 JSON 备份</view></view>
+  </view>
+
+  <view class="editor-card">
+    <textarea class="backup-input" value="{{content}}" maxlength="-1" placeholder="在这里长按粘贴备份内容…" bindinput="onInput"></textarea>
+    <view class="editor-footer">
+      <text class="character-count">{{characterCount}} 个字符</text>
+      <view class="text-action" wx:if="{{content}}" bindtap="clearContent">清空</view>
+    </view>
+  </view>
+
+  <button class="paste-button" bindtap="pasteFromClipboard">从剪贴板粘贴</button>
+  <button class="import-button {{!content ? 'disabled' : ''}}" bindtap="importBackup">检查并导入</button>
+
+  <view class="warning-card">
+    <view class="warning-title">导入前请注意</view>
+    <view class="warning-text">导入会替换当前设备中的全部事项。系统会先检查备份格式，并在真正导入前再次向你确认。</view>
+  </view>
+</view>
