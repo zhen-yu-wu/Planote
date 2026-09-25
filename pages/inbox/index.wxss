@@ -23,6 +23,7 @@
 .type-badge { flex: 0 0 auto; padding: 4rpx 10rpx; border-radius: 8rpx; background: #edf0ec; color: #7d847a; font-size: 19rpx; }
 .type-idea { background: #fff3dd; color: #a16d28; }
 .type-schedule { background: #e9f0f8; color: #4f7194; }
+.type-chore { background: #eeedf5; color: #6d708b; }
 .content-preview { display: -webkit-box; margin-top: 8rpx; overflow: hidden; color: #8d928a; font-size: 24rpx; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .empty-state { padding-top: 190rpx; color: #8d938a; text-align: center; }
 .empty-icon { margin-bottom: 22rpx; color: #b6bcb3; font-size: 76rpx; }

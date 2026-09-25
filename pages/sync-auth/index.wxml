@@ -1,0 +1,10 @@
+<view class="auth-shell">
+  <view class="auth-mark">序</view>
+  <view class="auth-title">验证同步权限</view>
+  <view class="auth-desc">同步服务目前仅向受邀账号开放。验证成功后当前账号会保留权限；密钥过期或被管理员收回时将停止同步。</view>
+  <view class="key-card">
+    <input class="key-input" password value="{{key}}" maxlength="128" placeholder="请输入同步密钥" bindinput="setKey" confirm-type="done" bindconfirm="verify" />
+  </view>
+  <button class="verify-button" loading="{{submitting}}" disabled="{{submitting}}" bindtap="verify">验证并开启同步</button>
+  <view class="security-note">密钥仅发送至云函数验证，不会保存在本机或事项数据中。</view>
+</view>

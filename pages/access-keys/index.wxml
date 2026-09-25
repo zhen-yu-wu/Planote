@@ -1,0 +1,33 @@
+<view class="page-shell key-shell">
+  <view class="intro-card card">
+    <view class="intro-title">同步名额管理</view>
+    <view class="intro-desc">创建一次性分发密钥，为受邀账号设置使用期限。过期或收回后，对应账号会停止同步，本地数据仍会保留。</view>
+  </view>
+
+  <view class="section">
+    <view class="section-head"><text class="section-title">创建密钥</text></view>
+    <view class="card form-card">
+      <view class="field-row"><text class="field-label">用途备注</text><input value="{{label}}" maxlength="30" placeholder="例如：备用手机" bindinput="setLabel" /></view>
+      <picker mode="date" value="{{expiryDate}}" start="{{minDate}}" bindchange="setExpiryDate">
+        <view class="field-row"><text class="field-label">到期日期</text><view class="picker-value">{{expiryDate}} <text>›</text></view></view>
+      </picker>
+      <picker mode="time" value="{{expiryTime}}" bindchange="setExpiryTime">
+        <view class="field-row"><text class="field-label">到期时间</text><view class="picker-value">{{expiryTime}} <text>›</text></view></view>
+      </picker>
+      <button class="create-button" loading="{{creating}}" disabled="{{creating}}" bindtap="createKey">创建分发密钥</button>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head"><text class="section-title">已创建的密钥</text><text class="section-count">{{keys.length}} 把</text></view>
+    <view wx:if="{{loading}}" class="empty-card card">正在读取…</view>
+    <view wx:elif="{{!keys.length}}" class="empty-card card">还没有分发密钥</view>
+    <view wx:else class="key-list">
+      <view class="key-card card" wx:for="{{keys}}" wx:key="keyId">
+        <view class="key-top"><view><view class="key-label">{{item.label}}</view><view class="key-preview">{{item.keyPreview}}</view></view><view class="status {{item.statusClass}}">{{item.status}}</view></view>
+        <view class="key-meta"><text>到期 {{item.expiryText}}</text><text>创建 {{item.createdText}}</text></view>
+        <button wx:if="{{item.canRevoke}}" class="revoke-button" data-key-id="{{item.keyId}}" data-label="{{item.label}}" bindtap="revokeKey">收回密钥</button>
+      </view>
+    </view>
+  </view>
+</view>

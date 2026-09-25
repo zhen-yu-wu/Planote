@@ -1,7 +1,7 @@
 const itemService = require('../../services/itemService')
 const { toDateString, getWeekRange } = require('../../utils/date')
 
-const typeNames = { idea: '想法', todo: '任务', schedule: '日程' }
+const typeNames = { idea: '想法', todo: '任务', chore: '琐事', schedule: '日程' }
 
 Page({
   data: {
@@ -55,6 +55,7 @@ Page({
     const type = event.currentTarget.dataset.value
     const update = { 'form.type': type }
     if (type === 'todo' && !this.data.form.taskScope) update['form.taskScope'] = 'day'
+    if ((type === 'chore' || type === 'schedule') && !this.data.form.date) update['form.date'] = toDateString(new Date())
     this.setData(update)
     wx.setNavigationBarTitle({ title: `${this.data.isEdit ? '编辑' : '新增'}${typeNames[type]}` })
   },

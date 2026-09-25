@@ -3,10 +3,13 @@ const itemService = require('../../services/itemService')
 Page({
   data: {
     filter: 'all', scope: 'all', sortMode: 'smart', sortLabel: '智能排序', items: [],
-    filters: [{ key: 'all', label: '全部' }, { key: 'idea', label: '想法' }, { key: 'todo', label: '待办' }, { key: 'schedule', label: '日程' }],
+    filters: [{ key: 'all', label: '全部' }, { key: 'idea', label: '想法' }, { key: 'todo', label: '待办' }, { key: 'chore', label: '琐事' }, { key: 'schedule', label: '日程' }],
     scopes: [{ key: 'all', label: '全部' }, { key: 'day', label: '日' }, { key: 'week', label: '周' }, { key: 'year', label: '年' }]
   },
-  onShow() { this.loadItems() },
+  onShow() {
+    this.loadItems()
+    itemService.sync().then((result) => { if (!result.skipped) this.loadItems() }).catch(() => {})
+  },
   onPullDownRefresh() { this.loadItems(); wx.stopPullDownRefresh() },
   loadItems() {
     let items = itemService.getAll()
@@ -28,9 +31,10 @@ Page({
     this.setData({ items: decorated })
   },
   decorate(item) {
-    const typeLabel = item.type === 'idea' ? '想法' : item.type === 'schedule' ? '日程' : ({ day: '日任务', week: '周任务', year: '年任务' }[item.taskScope] || '待办')
+    const typeLabel = item.type === 'idea' ? '想法' : item.type === 'chore' ? '琐事' : item.type === 'schedule' ? '日程' : ({ day: '日任务', week: '周任务', year: '年任务' }[item.taskScope] || '待办')
     let timeText = ''
     if (item.type === 'schedule') timeText = `${item.date} ${item.startTime || ''}`
+    else if (item.type === 'chore') timeText = item.date
     else if (item.taskScope === 'week') timeText = `${item.weekYear} 年第 ${item.weekNumber} 周`
     else if (item.taskScope === 'year') {
       const range = item.yearStartDate && item.yearEndDate ? `${item.yearStartDate} 至 ${item.yearEndDate}` : `${item.year} 年`
@@ -83,7 +87,7 @@ Page({
     } })
   },
   quickAdd() {
-    const params = ['type=idea', 'type=todo&scope=day', 'type=todo&scope=week', 'type=todo&scope=year', 'type=schedule']
-    wx.showActionSheet({ itemList: ['想法', '日任务', '周任务', '年任务', '日程'], success: ({ tapIndex }) => wx.navigateTo({ url: `/pages/editor/index?${params[tapIndex]}` }) })
+    const params = ['type=idea', 'type=todo&scope=day', 'type=todo&scope=week', 'type=todo&scope=year', 'type=chore', 'type=schedule']
+    wx.showActionSheet({ itemList: ['想法', '日任务', '周任务', '年任务', '琐事', '日程'], success: ({ tapIndex }) => wx.navigateTo({ url: `/pages/editor/index?${params[tapIndex]}` }) })
   }
 })

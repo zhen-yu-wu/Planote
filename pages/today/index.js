@@ -4,12 +4,15 @@ const { parseDate, WEEKDAYS } = require('../../utils/date')
 Page({
   data: {
     dateText: '', greeting: '', summaryText: '', handledToday: 0, todayTotal: 0, todayProgress: 0,
-    scheduleDone: 0, scheduleTotal: 0,
-    focus: [], overdueTodos: [], schedules: [], dayTodos: [], weekTodos: [], yearTodos: [], completedToday: [], completingId: '',
+    scheduleDone: 0, scheduleTotal: 0, choreDone: 0, choreTotal: 0,
+    focus: [], overdueTodos: [], schedules: [], chores: [], dayTodos: [], weekTodos: [], yearTodos: [], completedToday: [], completingId: '',
     dayDone: 0, dayTotal: 0, weekDone: 0, weekTotal: 0
   },
 
-  onShow() { this.loadDashboard() },
+  onShow() {
+    this.loadDashboard()
+    itemService.sync().then((result) => { if (!result.skipped) this.loadDashboard() }).catch(() => {})
+  },
   onPullDownRefresh() { this.loadDashboard(); wx.stopPullDownRefresh() },
 
   loadDashboard() {
@@ -26,11 +29,13 @@ Page({
     const remainingOverdueTodos = dashboard.overdueTodos.filter((item) => !focusIds.has(item.id))
     const activeYearTodos = dashboard.yearTodos.filter((item) => !item.completed)
     const activeToday = dashboard.dayTodos.filter((item) => !item.completed).length +
-      dashboard.schedules.filter((item) => !item.completed).length
+      dashboard.schedules.filter((item) => !item.completed).length +
+      dashboard.todayChores.filter((item) => !item.completed).length
     const scheduleDone = dashboard.schedules.filter((item) => item.completed).length
     const dayDone = dashboard.dayTodos.filter((item) => item.completed).length
-    const todayTotal = dashboard.dayTodos.length + dashboard.schedules.length
-    const handledToday = dayDone + scheduleDone
+    const choreDone = dashboard.todayChores.filter((item) => item.completed).length
+    const todayTotal = dashboard.dayTodos.length + dashboard.schedules.length + dashboard.todayChores.length
+    const handledToday = dayDone + scheduleDone + choreDone
     this.setData({
       dateText: `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日  ${WEEKDAYS[date.getDay()]}`,
       greeting,
@@ -42,9 +47,12 @@ Page({
       todayProgress: todayTotal ? Math.round(handledToday / todayTotal * 100) : 0,
       scheduleDone,
       scheduleTotal: dashboard.schedules.length,
+      choreDone,
+      choreTotal: dashboard.todayChores.length,
       focus: dashboard.focus.map(decorate),
       overdueTodos: remainingOverdueTodos.map(decorate),
       schedules: remainingSchedules.map(decorate),
+      chores: dashboard.pendingChores.map(decorate),
       dayTodos: remainingDayTodos.map(decorate),
       weekTodos: remainingWeekTodos.slice(0, 5).map(decorate),
       yearTodos: activeYearTodos.slice(0, 3).map(decorate),
@@ -60,6 +68,7 @@ Page({
     let subText = ''
     let statusClass = 'pill-green'
     if (item.type === 'schedule') subText = `${item.startTime || '全天'}${item.endTime ? ` - ${item.endTime}` : ''}`
+    else if (item.type === 'chore') subText = item.date && item.date < today ? `之前未完成 · ${item.date}` : '今日琐事'
     else if (item.deadlineDate) {
       const overdue = item.deadlineDate < today && !item.completed
       subText = overdue ? `已逾期 · ${item.deadlineDate}` : `截止 ${item.deadlineDate === today ? '今天' : item.deadlineDate}${item.deadlineTime ? ` ${item.deadlineTime}` : ''}`
@@ -70,7 +79,7 @@ Page({
     } else if (item.taskScope === 'week') subText = `第 ${item.weekNumber} 周 · 至 ${item.weekEndDate.slice(5)}`
     else if (item.taskScope === 'year') subText = `${item.year} 年目标`
     else subText = ['低', '中', '高'][item.urgency - 1] + '紧急'
-    const scopeText = item.type === 'schedule' ? '日程' :
+    const scopeText = item.type === 'schedule' ? '日程' : item.type === 'chore' ? '琐事' :
       ({ day: '日任务', week: '周任务', year: '年任务' }[item.taskScope] || '任务')
     const compactDate = (value) => value ? value.slice(5).replace('-', '.') : '未设置'
     return {
@@ -152,8 +161,8 @@ Page({
   },
 
   quickAdd() {
-    const choices = ['想法', '日任务', '周任务', '年任务', '日程']
-    const params = ['type=idea', 'type=todo&scope=day', 'type=todo&scope=week', 'type=todo&scope=year', 'type=schedule']
+    const choices = ['想法', '日任务', '周任务', '年任务', '琐事', '日程']
+    const params = ['type=idea', 'type=todo&scope=day', 'type=todo&scope=week', 'type=todo&scope=year', 'type=chore', 'type=schedule']
     wx.showActionSheet({ itemList: choices, success: ({ tapIndex }) => wx.navigateTo({ url: `/pages/editor/index?${params[tapIndex]}` }) })
   },
 

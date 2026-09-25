@@ -5,6 +5,9 @@
     "pages/calendar/index",
     "pages/profile/index",
     "pages/import/index",
+    "pages/sync-auth/index",
+    "pages/access-keys/index",
+    "pages/notifications/index",
     "pages/editor/index"
   ],
   "window": {

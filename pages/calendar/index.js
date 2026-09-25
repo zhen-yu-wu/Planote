@@ -8,7 +8,10 @@ Page({
     const now = new Date()
     this.setData({ year: now.getFullYear(), month: now.getMonth() + 1, selectedDate: toDateString(now) })
   },
-  onShow() { if (this.data.year) this.buildMonth() },
+  onShow() {
+    if (this.data.year) this.buildMonth()
+    itemService.sync().then((result) => { if (!result.skipped && this.data.year) this.buildMonth() }).catch(() => {})
+  },
   buildMonth() {
     const { year, month, selectedDate } = this.data
     const firstDay = new Date(year, month - 1, 1).getDay()
@@ -27,6 +30,7 @@ Page({
         isWeekend: weekday === 0 || weekday === 6,
         hasSchedule: related.some((i) => i.type === 'schedule'),
         hasTodo: related.some((i) => i.type === 'todo'),
+        hasChore: related.some((i) => i.type === 'chore'),
         holidayLabel: holiday ? holiday.shortName : '',
         holidayKind: holiday ? holiday.kind : ''
       })
@@ -39,7 +43,12 @@ Page({
     const all = itemService.getAll()
     const items = all.filter((item) => item.date === selectedDate || item.deadlineDate === selectedDate)
       .sort((a, b) => (a.startTime || a.deadlineTime || '99:99').localeCompare(b.startTime || b.deadlineTime || '99:99'))
-      .map((item) => ({ ...item, typeLabel: item.type === 'schedule' ? '日程' : item.type === 'todo' ? '待办' : '想法', timeText: item.type === 'schedule' ? `${item.startTime || '全天'}${item.endTime ? ` - ${item.endTime}` : ''}` : item.deadlineDate === selectedDate ? `${item.deadlineTime || '当天'} 截止` : '当天任务' }))
+      .map((item) => ({
+        ...item,
+        typeLabel: item.type === 'schedule' ? '日程' : item.type === 'todo' ? '待办' : item.type === 'chore' ? '琐事' : '想法',
+        timeText: item.type === 'schedule' ? `${item.startTime || '全天'}${item.endTime ? ` - ${item.endTime}` : ''}` :
+          item.type === 'chore' ? '当天处理' : item.deadlineDate === selectedDate ? `${item.deadlineTime || '当天'} 截止` : '当天任务'
+      }))
     const parts = selectedDate.split('-').map(Number)
     this.setData({ selectedLabel: `${parts[1]}月${parts[2]}日`, selectedItems: items, selectedHoliday: getHolidayInfo(selectedDate) })
   },
@@ -87,9 +96,9 @@ Page({
     })
   },
   quickAdd() {
-    wx.showActionSheet({ itemList: ['日任务', '日程', '想法'], success: ({ tapIndex }) => {
+    wx.showActionSheet({ itemList: ['日任务', '琐事', '日程', '想法'], success: ({ tapIndex }) => {
       const date = this.data.selectedDate
-      const params = [`type=todo&scope=day&date=${date}`, `type=schedule&date=${date}`, 'type=idea'][tapIndex]
+      const params = [`type=todo&scope=day&date=${date}`, `type=chore&date=${date}`, `type=schedule&date=${date}`, 'type=idea'][tapIndex]
       wx.navigateTo({ url: `/pages/editor/index?${params}` })
     } })
   }

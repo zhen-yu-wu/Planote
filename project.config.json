@@ -33,6 +33,7 @@
   "appid": "wx955ebbe01724f330",
   "projectname": "我的日序",
   "miniprogramRoot": "./",
+  "cloudfunctionRoot": "cloudfunctions/",
   "simulatorPluginLibVersion": {},
   "editorSetting": {}
 }

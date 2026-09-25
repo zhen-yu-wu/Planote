@@ -6,7 +6,7 @@
     <view class="today-status">
       <view class="status-head"><text>今日已处理 {{handledToday}} / {{todayTotal}}</text><text class="status-percent">{{todayProgress}}%</text></view>
       <view class="status-track"><view class="status-fill" style="width: {{todayProgress}}%"></view></view>
-      <view class="status-breakdown"><text>日任务 {{dayDone}} / {{dayTotal}}</text><view class="status-divider"></view><text>日程 {{scheduleDone}} / {{scheduleTotal}}</text></view>
+      <view class="status-breakdown"><text>日任务 {{dayDone}} / {{dayTotal}}</text><view class="status-divider"></view><text>日程 {{scheduleDone}} / {{scheduleTotal}}</text><view class="status-divider"></view><text>琐事 {{choreDone}} / {{choreTotal}}</text></view>
     </view>
   </view>
 
@@ -59,6 +59,17 @@
       <view class="task-row {{completingId === item.id ? 'finishing' : ''}}" wx:for="{{dayTodos}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
         <view class="check {{item.completed ? 'done' : ''}}" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
         <view class="task-main"><view class="row-title-line"><view class="task-title {{item.completed ? 'done' : ''}}">{{item.title}}</view><text class="type-chip task-chip">日任务</text></view><view class="task-sub" wx:if="{{item.subText}}">{{item.subText}}</view></view>
+        <view class="more" data-id="{{item.id}}" catchtap="showItemActions">···</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{chores.length}}">
+    <view class="section-head"><text class="section-title">琐事</text><text class="section-meta">{{chores.length}} 件待处理</text></view>
+    <view class="card chore-card">
+      <view class="chore-row {{completingId === item.id ? 'finishing' : ''}}" wx:for="{{chores}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
+        <view class="check chore-check" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
+        <view class="task-main"><view class="row-title-line"><view class="task-title">{{item.title}}</view><text class="type-chip chore-chip">琐事</text></view><view class="task-sub">{{item.subText}}</view></view>
         <view class="more" data-id="{{item.id}}" catchtap="showItemActions">···</view>
       </view>
     </view>

@@ -1,0 +1,55 @@
+<view class="page-shell notify-shell">
+  <view wx:if="{{!authorized}}" class="notice-card card locked-card">
+    <view class="notice-title">需要同步权限</view>
+    <view class="notice-desc">每日提醒由云端汇总并发送，请先返回“我的”完成同步权限验证。</view>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{serviceUnavailable}}" class="service-card">
+      <view><view class="service-title">云端通知服务待更新</view><view class="service-desc">页面可正常浏览，但暂时不能保存或开启通知。</view></view>
+      <button bindtap="retryLoad">重试</button>
+    </view>
+    <view class="notice-card card">
+      <view class="notice-head"><view><view class="notice-title">微信每日提醒</view><view class="notice-desc">在设定时间汇总待处理事项并发送到微信服务通知。</view></view><switch checked="{{settings.enabled}}" disabled="{{serviceUnavailable || !templateConfigured || loading}}" color="#397356" bindchange="toggleEnabled" /></view>
+      <view class="quota {{settings.subscriptionReady ? 'ready' : 'waiting'}}">
+        <text>{{settings.subscriptionReady ? (longTerm ? '长期订阅已生效' : '下一次提醒已订阅') : '需要订阅下一次提醒'}}</text>
+        <button wx:if="{{settings.enabled && !settings.subscriptionReady && templateConfigured}}" loading="{{subscribing}}" bindtap="renewSubscription">立即续订</button>
+      </view>
+      <view wx:if="{{settings.lastSendStatus}}" class="send-status {{settings.lastSendStatus}}">
+        <text>{{settings.lastSendStatus === 'success' ? '最近一次发送成功' : (settings.lastSendError || '最近一次发送失败')}}</text>
+      </view>
+      <button class="test-button" loading="{{testing}}" disabled="{{testing || loading || serviceUnavailable || !settings.enabled}}" bindtap="testNotification">发送测试通知</button>
+    </view>
+
+    <view class="section">
+      <view class="section-head"><text class="section-title">提醒时间</text></view>
+      <view class="card settings-card">
+        <picker mode="time" value="{{settings.time}}" bindchange="setTime">
+          <view class="setting-row"><view><view>每天提醒时间</view><view class="row-sub">按北京时间发送</view></view><view class="time-value">{{settings.time}} <text>›</text></view></view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-head"><text class="section-title">通知内容</text></view>
+      <view class="card settings-card">
+        <view class="setting-row"><view><view>今日任务</view><view class="row-sub">当天的日任务与琐事</view></view><switch checked="{{settings.scopes.today}}" data-scope="today" color="#397356" bindchange="setScope" /></view>
+        <view class="setting-row"><view><view>本周任务</view><view class="row-sub">本周尚未完成的周任务</view></view><switch checked="{{settings.scopes.week}}" data-scope="week" color="#397356" bindchange="setScope" /></view>
+        <view class="setting-row"><view><view>滞留事项</view><view class="row-sub">已过期的任务与遗留琐事</view></view><switch checked="{{settings.scopes.overdue}}" data-scope="overdue" color="#397356" bindchange="setScope" /></view>
+      </view>
+      <button class="save-button" loading="{{saving}}" disabled="{{serviceUnavailable || saving || loading}}" bindtap="savePreferences">保存提醒设置</button>
+    </view>
+
+    <view wx:if="{{isAdmin}}" class="section">
+      <view class="section-head"><text class="section-title">管理员模板配置</text></view>
+      <view class="card template-card">
+        <view class="template-help">当前模板字段：提醒内容、任务名称、截止时间、紧急度、备注。模板 ID 已预置，通常无需修改。</view>
+        <input class="template-input" value="{{templateInput}}" placeholder="订阅消息模板 ID" bindinput="setTemplateInput" />
+        <view class="setting-row compact"><view><view>长期订阅模板</view><view class="row-sub">仅公共服务类目的长期模板可开启</view></view><switch checked="{{longTerm}}" color="#397356" bindchange="setLongTerm" /></view>
+        <button class="template-button" loading="{{saving}}" disabled="{{serviceUnavailable || saving}}" bindtap="saveTemplate">保存模板配置</button>
+      </view>
+    </view>
+
+    <view class="limit-note">普通小程序通常使用一次性订阅：每次授权可发送一条提醒，发送后需要再次续订。通知关闭或没有订阅额度时不会推送。</view>
+  </block>
+</view>

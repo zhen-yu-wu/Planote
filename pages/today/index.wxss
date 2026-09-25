@@ -39,6 +39,11 @@
 .schedule-row { display: flex; align-items: stretch; min-height: 90rpx; padding: 22rpx 20rpx; }
 .schedule-card { overflow: hidden; border-left: 6rpx solid #7898b6; }
 .day-task-card { overflow: hidden; border-left: 6rpx solid #d4a05b; }
+.chore-card { overflow: hidden; border-left: 6rpx solid #8d91aa; }
+.chore-row { display: flex; align-items: flex-start; padding: 19rpx 20rpx; }
+.chore-row + .chore-row { border-top: 1rpx solid #eff1ec; }
+.chore-check { border-color: #b6b8c8; border-radius: 11rpx; }
+.chore-chip { background: #eeedf5; color: #6f708b; }
 .schedule-row + .schedule-row { border-top: 1rpx solid #eff1ec; }
 .schedule-time { display: flex; flex-direction: column; width: 95rpx; color: #313930; font-size: 25rpx; font-weight: 650; }
 .end-time { margin-top: 5rpx; color: #a0a59c; font-size: 21rpx; font-weight: 400; }

@@ -2,6 +2,7 @@
   <view class="segmented type-tabs">
     <view class="segment {{form.type === 'idea' ? 'active' : ''}}" data-value="idea" bindtap="chooseType">想法</view>
     <view class="segment {{form.type === 'todo' ? 'active' : ''}}" data-value="todo" bindtap="chooseType">任务</view>
+    <view class="segment {{form.type === 'chore' ? 'active' : ''}}" data-value="chore" bindtap="chooseType">琐事</view>
     <view class="segment {{form.type === 'schedule' ? 'active' : ''}}" data-value="schedule" bindtap="chooseType">日程</view>
   </view>
 
@@ -48,6 +49,10 @@
       <view class="priority-row"><text>紧急程度</text><view class="level-group"><view wx:for="{{urgencyLabels}}" wx:key="*this" class="level {{form.urgency === index + 1 ? 'selected level-' + (index + 1) : ''}}" data-value="{{index + 1}}" bindtap="setUrgency">{{item}}</view></view></view>
       <view class="priority-row"><text>重要程度</text><view class="level-group"><view wx:for="{{importanceLabels}}" wx:key="*this" class="level {{form.importance === index + 1 ? 'selected level-' + (index + 1) : ''}}" data-value="{{index + 1}}" bindtap="setImportance">{{item}}</view></view></view>
     </view>
+  </view>
+
+  <view class="form-card fields" wx:if="{{form.type === 'chore'}}">
+    <picker mode="date" value="{{form.date}}" data-field="date" bindchange="setField"><view class="field-row"><text>处理日期</text><text class="field-value">{{form.date || '请选择'}} ›</text></view></picker>
   </view>
 
   <view class="form-card fields" wx:if="{{form.type === 'schedule'}}">

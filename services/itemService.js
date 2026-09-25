@@ -1,6 +1,10 @@
 const repository = require('../repositories/itemRepository')
 const { toDateString, getWeekRange, combineDateTime } = require('../utils/date')
 
+const scheduleSync = () => {
+  try { require('./syncService').schedule() } catch (error) {}
+}
+
 const defaults = {
   type: 'idea', taskScope: '', title: '', content: '', date: '',
   startTime: '', endTime: '', deadlineDate: '', deadlineTime: '',
@@ -53,10 +57,16 @@ const save = (draft) => {
   }
   if (item.completed && (!previous || !previous.completed)) item.completedAt = now
   if (!item.completed) item.completedAt = null
-  if (item.id) return repository.update(item)
+  if (item.id) {
+    const saved = repository.update(item)
+    scheduleSync()
+    return saved
+  }
   item.id = id()
   item.createdAt = now
-  return repository.add(item)
+  const saved = repository.add(item)
+  scheduleSync()
+  return saved
 }
 
 const toggleCompleted = (itemId) => {
@@ -68,8 +78,12 @@ const toggleCompleted = (itemId) => {
   return save(item)
 }
 
-const remove = (itemId) => repository.remove(itemId)
-const clearAll = () => repository.clear()
+const remove = (itemId) => {
+  const removed = repository.remove(itemId)
+  if (removed) scheduleSync()
+  return removed
+}
+const clearAll = () => { repository.clear(); scheduleSync() }
 
 const prepareImport = (raw) => {
   let payload
@@ -80,7 +94,7 @@ const prepareImport = (raw) => {
   }
   const source = Array.isArray(payload) ? payload : payload && payload.items
   if (!Array.isArray(source)) throw new Error('备份中没有找到事项数据')
-  const allowedTypes = ['idea', 'todo', 'schedule']
+  const allowedTypes = ['idea', 'todo', 'chore', 'schedule']
   const seenIds = new Set()
   const now = Date.now()
   return source.map((entry, index) => {
@@ -109,12 +123,29 @@ const prepareImport = (raw) => {
 const importItems = (items) => {
   if (!Array.isArray(items)) throw new Error('导入数据无效')
   repository.replaceAll(items)
+  scheduleSync()
   return items.length
 }
+
+const sync = (options) => require('./syncService').sync(options)
+const getSyncMeta = () => repository.getSyncMeta()
+const getSyncSettings = () => require('./syncService').getSettings()
+const setAutoSync = (enabled) => require('./syncService').setAutoSync(enabled)
+const refreshSyncAccess = () => require('./syncService').refreshAccessStatus()
+const verifySyncAccess = (key) => require('./syncService').verifyAccessKey(key)
+const listSyncAccessKeys = () => require('./syncService').listAccessKeys()
+const createSyncAccessKey = (label, expiresAt) => require('./syncService').createAccessKey(label, expiresAt)
+const revokeSyncAccessKey = (keyId) => require('./syncService').revokeAccessKey(keyId)
+const getNotificationSettings = () => require('./syncService').getNotificationSettings()
+const saveNotificationSettings = (settings) => require('./syncService').saveNotificationSettings(settings)
+const markNotificationSubscribed = () => require('./syncService').markNotificationSubscribed()
+const saveNotificationTemplate = (templateId, longTerm) => require('./syncService').saveNotificationTemplate(templateId, longTerm)
+const testNotification = () => require('./syncService').testNotification()
 
 const inboxTime = (item) => {
   if (item.deadlineDate) return combineDateTime(item.deadlineDate, item.deadlineTime, true)
   if (item.type === 'schedule' && item.date) return combineDateTime(item.date, item.startTime, false)
+  if (item.type === 'chore' && item.date) return combineDateTime(item.date, '', true)
   if (item.taskScope === 'day' && item.date) return combineDateTime(item.date, '', true)
   if (item.taskScope === 'week' && item.weekEndDate) return combineDateTime(item.weekEndDate, '', true)
   if (item.taskScope === 'year' && item.yearEndDate) return combineDateTime(item.yearEndDate, '', true)
@@ -239,6 +270,10 @@ const getDashboard = (now = new Date()) => {
   const active = all.filter((item) => !item.completed)
   const schedules = all.filter((item) => item.type === 'schedule' && item.date === today)
     .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+  const todayChores = all.filter((item) => item.type === 'chore' && item.date === today)
+    .sort((a, b) => Number(a.completed) - Number(b.completed) || (b.updatedAt || 0) - (a.updatedAt || 0))
+  const pendingChores = all.filter((item) => item.type === 'chore' && !item.completed && (!item.date || item.date <= today))
+    .sort((a, b) => (a.date || '0000-00-00').localeCompare(b.date || '0000-00-00') || (b.updatedAt || 0) - (a.updatedAt || 0))
   const dayTodos = all.filter((item) => item.type === 'todo' && item.taskScope === 'day' && item.date === today)
     .sort((a, b) => priorityScore(b, now) - priorityScore(a, now))
   const weekTodos = all.filter((item) => item.type === 'todo' && item.taskScope === 'week' &&
@@ -276,7 +311,11 @@ const getDashboard = (now = new Date()) => {
     return item.date === today
   }).sort((a, b) => (b.completedAt || b.updatedAt || 0) - (a.completedAt || a.updatedAt || 0))
 
-  return { today, week, schedules, dayTodos, weekTodos, yearTodos, overdueTodos, focus: focusCandidates, completedToday }
+  return { today, week, schedules, todayChores, pendingChores, dayTodos, weekTodos, yearTodos, overdueTodos, focus: focusCandidates, completedToday }
 }
 
-module.exports = { getAll, getById, save, remove, clearAll, prepareImport, importItems, inboxDate, sortForInbox, toggleCompleted, getDashboard, priorityScore }
+module.exports = {
+  getAll, getById, save, remove, clearAll, prepareImport, importItems, inboxDate, sortForInbox, toggleCompleted, getDashboard, priorityScore,
+  sync, getSyncMeta, getSyncSettings, setAutoSync, refreshSyncAccess, verifySyncAccess, listSyncAccessKeys, createSyncAccessKey, revokeSyncAccessKey,
+  getNotificationSettings, saveNotificationSettings, markNotificationSubscribed, saveNotificationTemplate, testNotification
+}

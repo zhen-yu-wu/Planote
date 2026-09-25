@@ -6,7 +6,7 @@
       <view wx:for="{{days}}" wx:key="key" class="day-cell {{item.blank ? 'blank' : ''}} {{item.selected ? 'selected' : ''}}" data-date="{{item.date}}" bindtap="selectDay">
         <view class="day-number {{item.isToday ? 'today' : ''}} {{item.isWeekend && !item.isToday ? 'weekend' : ''}}">{{item.day}}</view>
         <view class="holiday-label holiday-{{item.holidayKind}}" wx:if="{{item.holidayLabel}}">{{item.holidayLabel}}</view>
-        <view class="dots"><view wx:if="{{item.hasSchedule}}" class="dot schedule-dot"></view><view wx:if="{{item.hasTodo}}" class="dot todo-dot"></view></view>
+        <view class="dots"><view wx:if="{{item.hasSchedule}}" class="dot schedule-dot"></view><view wx:if="{{item.hasTodo}}" class="dot todo-dot"></view><view wx:if="{{item.hasChore}}" class="dot chore-dot"></view></view>
       </view>
     </view>
   </view>
