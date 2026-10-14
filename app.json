@@ -8,6 +8,7 @@
     "pages/sync-auth/index",
     "pages/access-keys/index",
     "pages/notifications/index",
+    "pages/privacy/index",
     "pages/editor/index"
   ],
   "window": {

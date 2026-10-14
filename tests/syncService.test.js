@@ -20,7 +20,7 @@ global.wx = {
       if (data.action === 'saveNotificationSettings') return Promise.resolve({ result: { ok: true, settings: data } })
       if (data.action === 'markNotificationSubscribed') return Promise.resolve({ result: { ok: true, subscriptionReady: true } })
       if (data.action === 'saveNotificationTemplate') return Promise.resolve({ result: { ok: true, templateConfigured: true, templateId: data.templateId, longTerm: data.longTerm } })
-      lastSyncPayload = data.records
+      if (data.action === 'sync') lastSyncPayload = data.records
       return Promise.resolve({ result: {
         ok: true,
         authorized: true,

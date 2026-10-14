@@ -1,6 +1,21 @@
 # 微信开发者工具的个人配置
 project.private.config.json
 
+# 仅在本机留存的文档、审核和发布记录
+*.md
+.local-records/
+*.bundle
+
+# 个人联系方式素材（本机发布时保留，不上传代码仓库）
+/assets/images/developer-wechat.jpg
+
+# 私钥、证书与凭据文件
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+
 # 依赖与构建产物
 node_modules/
 miniprogram_npm/

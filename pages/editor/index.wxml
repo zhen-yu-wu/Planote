@@ -67,6 +67,6 @@
     <view class="field-row"><text>已完成</text><switch checked="{{form.completed}}" color="#397356" data-field="completed" bindchange="setBoolean" /></view>
   </view>
 
-  <button class="save-button" bindtap="save">保存事项</button>
+  <button class="save-button" loading="{{saving}}" disabled="{{saving}}" bindtap="save">保存事项</button>
   <button class="delete-button" wx:if="{{isEdit}}" bindtap="remove">删除事项</button>
 </view>

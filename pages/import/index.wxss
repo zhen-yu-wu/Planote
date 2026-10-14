@@ -3,12 +3,12 @@
 .intro-icon { display: flex; align-items: center; justify-content: center; width: 70rpx; height: 70rpx; margin-right: 20rpx; border-radius: 21rpx; background: #e4efe7; color: #347052; font-size: 38rpx; font-weight: 600; }
 .intro-main { flex: 1; }
 .intro-title { font-size: 32rpx; font-weight: 700; }
-.intro-sub { margin-top: 6rpx; color: #8c9389; font-size: 23rpx; }
+.intro-sub { margin-top: 6rpx; color: #8c9389; font-size: 24rpx; }
 .editor-card { overflow: hidden; border: 1rpx solid #e1e5df; border-radius: 24rpx; background: #fff; box-shadow: 0 10rpx 30rpx rgba(40, 54, 44, .045); }
-.backup-input { box-sizing: border-box; width: 100%; height: 430rpx; padding: 24rpx; color: #3e443d; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 23rpx; line-height: 1.55; }
+.backup-input { box-sizing: border-box; width: 100%; height: 430rpx; padding: 24rpx; color: #3e443d; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 24rpx; line-height: 1.55; }
 .editor-footer { display: flex; align-items: center; justify-content: space-between; min-height: 68rpx; padding: 0 22rpx; border-top: 1rpx solid #eff1ec; }
-.character-count { color: #a0a69d; font-size: 21rpx; }
-.text-action { padding: 12rpx 2rpx 12rpx 24rpx; color: #a85d4b; font-size: 23rpx; }
+.character-count { color: #697164; font-size: 24rpx; }
+.text-action { padding: 12rpx 2rpx 12rpx 24rpx; color: #697164; font-size: 24rpx; }
 .paste-button, .import-button { width: 100%; border-radius: 22rpx; font-size: 27rpx; font-weight: 650; line-height: 88rpx; }
 .paste-button { margin-top: 24rpx; background: #e6efe8; color: #326d50; }
 .import-button { margin-top: 18rpx; background: #2f6b4f; color: #fff; box-shadow: 0 10rpx 24rpx rgba(47, 107, 79, .18); }
@@ -16,4 +16,7 @@
 .paste-button::after, .import-button::after { border: 0; }
 .warning-card { margin-top: 32rpx; padding: 22rpx 24rpx; border-radius: 20rpx; background: #fff4e5; color: #8f6736; }
 .warning-title { font-size: 24rpx; font-weight: 650; }
-.warning-text { margin-top: 8rpx; font-size: 22rpx; line-height: 1.55; }
+.warning-text { margin-top: 8rpx; font-size: 24rpx; line-height: 1.55; }
+.import-modes { display: flex; gap: 16rpx; margin-top: 24rpx; }
+.mode-button { flex: 1; margin: 0; padding: 8rpx; font-size: 25rpx; background: #fff; color: #596057; }
+.mode-button.selected { background: #e4efe7; color: #2f6b4f; }

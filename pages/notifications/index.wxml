@@ -15,6 +15,7 @@
         <text>{{settings.subscriptionReady ? (longTerm ? '长期订阅已生效' : '下一次提醒已订阅') : '需要订阅下一次提醒'}}</text>
         <button wx:if="{{settings.enabled && !settings.subscriptionReady && templateConfigured}}" loading="{{subscribing}}" bindtap="renewSubscription">立即续订</button>
       </view>
+      <view wx:if="{{!longTerm && settings.subscriptionCredits > 0}}" class="row-sub">已记录 {{settings.subscriptionCredits}} 次待使用授权，实际可发送次数以微信为准。</view>
       <view wx:if="{{settings.lastSendStatus}}" class="send-status {{settings.lastSendStatus}}">
         <text>{{settings.lastSendStatus === 'success' ? '最近一次发送成功' : (settings.lastSendError || '最近一次发送失败')}}</text>
       </view>
@@ -25,7 +26,7 @@
       <view class="section-head"><text class="section-title">提醒时间</text></view>
       <view class="card settings-card">
         <picker mode="time" value="{{settings.time}}" bindchange="setTime">
-          <view class="setting-row"><view><view>每天提醒时间</view><view class="row-sub">按北京时间发送</view></view><view class="time-value">{{settings.time}} <text>›</text></view></view>
+          <view class="setting-row"><view><view>每天提醒时间</view><view class="row-sub">北京时间，每 5 分钟检查；使用最近已同步的记录</view></view><view class="time-value">{{settings.time}} <text>›</text></view></view>
         </picker>
       </view>
     </view>
@@ -33,11 +34,13 @@
     <view class="section">
       <view class="section-head"><text class="section-title">通知内容</text></view>
       <view class="card settings-card">
-        <view class="setting-row"><view><view>今日任务</view><view class="row-sub">当天的日任务与琐事</view></view><switch checked="{{settings.scopes.today}}" data-scope="today" color="#397356" bindchange="setScope" /></view>
+        <view class="setting-row"><view><view>今日任务</view><view class="row-sub">当天的日任务、琐事与日程</view></view><switch checked="{{settings.scopes.today}}" data-scope="today" color="#397356" bindchange="setScope" /></view>
         <view class="setting-row"><view><view>本周任务</view><view class="row-sub">本周尚未完成的周任务</view></view><switch checked="{{settings.scopes.week}}" data-scope="week" color="#397356" bindchange="setScope" /></view>
         <view class="setting-row"><view><view>滞留事项</view><view class="row-sub">已过期的任务与遗留琐事</view></view><switch checked="{{settings.scopes.overdue}}" data-scope="overdue" color="#397356" bindchange="setScope" /></view>
       </view>
-      <button class="save-button" loading="{{saving}}" disabled="{{serviceUnavailable || saving || loading}}" bindtap="savePreferences">保存提醒设置</button>
+      <view class="notify-actions">
+        <button class="notify-save-button" loading="{{saving}}" disabled="{{serviceUnavailable || saving || loading}}" bindtap="savePreferences">保存提醒设置</button>
+      </view>
     </view>
 
     <view wx:if="{{isAdmin}}" class="section">
@@ -50,6 +53,6 @@
       </view>
     </view>
 
-    <view class="limit-note">普通小程序通常使用一次性订阅：每次授权可发送一条提醒，发送后需要再次续订。通知关闭或没有订阅额度时不会推送。</view>
+    <view class="limit-note">普通小程序通常使用一次性订阅：每次授权可发送一条提醒。本工具每天最多发送一次，测试也计入当天次数；发送后需再次续订。通知关闭或没有订阅额度时不会推送。</view>
   </block>
 </view>

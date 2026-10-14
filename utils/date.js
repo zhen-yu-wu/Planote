@@ -6,7 +6,7 @@ const toDateString = (date) => {
 }
 
 const parseDate = (value) => {
-  if (!value) return null
+  if (!require('./itemValidation').validDate(value)) return null
   const parts = value.split('-').map(Number)
   return new Date(parts[0], parts[1] - 1, parts[2])
 }
@@ -34,6 +34,7 @@ const getWeekRange = (date) => {
 const combineDateTime = (date, time, endOfDay) => {
   if (!date) return null
   const parsed = parseDate(date)
+  if (!parsed || (time && !require('./itemValidation').validTime(time))) return null
   const parts = (time || (endOfDay ? '23:59' : '00:00')).split(':').map(Number)
   parsed.setHours(parts[0], parts[1], endOfDay ? 59 : 0, 0)
   return parsed

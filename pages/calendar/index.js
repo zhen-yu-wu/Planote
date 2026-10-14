@@ -1,4 +1,5 @@
 const itemService = require('../../services/itemService')
+const actions = require('../../services/pageActions')
 const { pad, toDateString } = require('../../utils/date')
 const { getHolidayInfo } = require('../../utils/holiday')
 
@@ -10,8 +11,9 @@ Page({
   },
   onShow() {
     if (this.data.year) this.buildMonth()
-    itemService.sync().then((result) => { if (!result.skipped && this.data.year) this.buildMonth() }).catch(() => {})
+    itemService.sync().then((result) => { if (!result.skipped && this.data.year) this.buildMonth() }).catch(() => {}).finally(() => actions.syncStatus(this))
   },
+  onPullDownRefresh() { return actions.refresh(this, this.buildMonth) },
   buildMonth() {
     const { year, month, selectedDate } = this.data
     const firstDay = new Date(year, month - 1, 1).getDay()
@@ -73,28 +75,10 @@ Page({
     this.buildMonth()
   },
   openItem(event) { wx.navigateTo({ url: `/pages/editor/index?id=${event.currentTarget.dataset.id}` }) },
-  toggleCompleted(event) {
-    const id = event.currentTarget.dataset.id
-    const item = itemService.getById(id)
-    if (!item) return
-    if (item.completed) {
-      itemService.toggleCompleted(id)
-      wx.showToast({ title: '已恢复', icon: 'none' })
-      this.buildMonth()
-      return
-    }
-    wx.showModal({
-      title: '确认完成？',
-      content: `确定将“${item.title}”标记为已完成吗？`,
-      confirmText: '完成',
-      confirmColor: '#2F6B4F',
-      success: ({ confirm }) => {
-        if (!confirm) return
-        itemService.toggleCompleted(id)
-        this.buildMonth()
-      }
-    })
-  },
+  toggleCompleted(event) { actions.toggle(this, event.currentTarget.dataset.id, this.buildMonth) },
+  undoCompleted() { actions.undo(this) },
+  onUnload() { actions.cleanup(this) },
+
   quickAdd() {
     wx.showActionSheet({ itemList: ['日任务', '琐事', '日程', '想法'], success: ({ tapIndex }) => {
       const date = this.data.selectedDate

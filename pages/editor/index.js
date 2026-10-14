@@ -6,6 +6,7 @@ const typeNames = { idea: '想法', todo: '任务', chore: '琐事', schedule: '
 Page({
   data: {
     isEdit: false,
+    saving: false,
     form: {},
     urgencyLabels: ['低', '中', '高'],
     importanceLabels: ['低', '中', '高']
@@ -54,8 +55,11 @@ Page({
   chooseType(event) {
     const type = event.currentTarget.dataset.value
     const update = { 'form.type': type }
+    if (type !== this.data.form.type) {
+      Object.assign(update, { 'form.taskScope': type === 'todo' ? 'day' : '', 'form.deadlineDate': '', 'form.deadlineTime': '', 'form.startTime': '', 'form.endTime': '', 'form.progress': null })
+    }
     if (type === 'todo' && !this.data.form.taskScope) update['form.taskScope'] = 'day'
-    if ((type === 'chore' || type === 'schedule') && !this.data.form.date) update['form.date'] = toDateString(new Date())
+    if (['todo', 'chore', 'schedule'].includes(type) && !this.data.form.date) update['form.date'] = toDateString(new Date())
     this.setData(update)
     wx.setNavigationBarTitle({ title: `${this.data.isEdit ? '编辑' : '新增'}${typeNames[type]}` })
   },
@@ -63,7 +67,16 @@ Page({
   chooseScope(event) {
     const scope = event.currentTarget.dataset.value
     const update = { 'form.taskScope': scope }
+    if (scope !== this.data.form.taskScope) Object.assign(update, { 'form.deadlineDate': '', 'form.deadlineTime': '' })
     if (scope === 'day' && !this.data.form.date) update['form.date'] = toDateString(new Date())
+    if (scope === 'week' && !this.data.form.weekStartDate) {
+      const week = getWeekRange(new Date())
+      Object.assign(update, { 'form.weekYear': week.weekYear, 'form.weekNumber': week.weekNumber, 'form.weekStartDate': week.start, 'form.weekEndDate': week.end })
+    }
+    if (scope === 'year' && !this.data.form.yearStartDate) {
+      const year = new Date().getFullYear()
+      Object.assign(update, { 'form.year': year, 'form.yearStartDate': `${year}-01-01`, 'form.yearEndDate': `${year}-12-31`, 'form.progress': null })
+    }
     this.setData(update)
   },
 
@@ -90,6 +103,7 @@ Page({
   },
 
   save() {
+    if (this.data.saving) return
     const form = this.data.form
     if (!form.title || !form.title.trim()) return wx.showToast({ title: '请填写标题', icon: 'none' })
     if (form.type === 'schedule' && !form.date) return wx.showToast({ title: '请选择日程日期', icon: 'none' })
@@ -100,10 +114,13 @@ Page({
       return wx.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
     }
     try {
-      itemService.save(form)
+      this.setData({ saving: true })
+      const saved = itemService.save(form)
+      this.setData({ form: saved, isEdit: true })
       wx.showToast({ title: '已保存', icon: 'success' })
       setTimeout(() => wx.navigateBack(), 350)
     } catch (error) {
+      this.setData({ saving: false })
       wx.showToast({ title: error.message || '保存失败', icon: 'none' })
     }
   },
@@ -113,8 +130,8 @@ Page({
       title: '删除事项？', content: '删除后无法恢复。', confirmColor: '#C14E38',
       success: ({ confirm }) => {
         if (!confirm) return
-        itemService.remove(this.data.form.id)
-        wx.navigateBack()
+        try { itemService.remove(this.data.form.id); wx.navigateBack() }
+        catch (error) { wx.showToast({ title: error.message || '删除失败', icon: 'none' }) }
       }
     })
   }

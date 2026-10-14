@@ -1,4 +1,6 @@
 <view class="page-shell">
+  <view wx:if="{{syncError}}" class="sync-warning">同步未完成：{{syncError}}。本机记录仍保留。</view>
+  <view wx:if="{{isEmpty}}" class="card welcome-card"><view class="section-title">先记下一件今天要做的事</view><view class="task-sub">从一个小任务开始，再安排本周与长期目标。</view><button bindtap="openFirstTask">新建今日任务</button></view>
   <view class="hero">
     <view class="date">{{dateText}}</view>
     <view class="greeting">{{greeting}}</view>
@@ -28,7 +30,7 @@
   </view>
 
   <view class="section" wx:if="{{overdueTodos.length}}">
-    <view class="section-head"><text class="section-title overdue-heading">其余逾期任务</text><text class="section-meta">{{overdueTodos.length}} 项</text></view>
+    <view class="section-head"><text class="section-title overdue-heading">其余逾期任务</text><text class="section-meta">{{overdueTotal}} 项</text></view>
     <view class="card overdue-card">
       <view class="task-row {{completingId === item.id ? 'finishing' : ''}}" wx:for="{{overdueTodos}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
         <view class="check overdue-check" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
@@ -38,6 +40,7 @@
         </view>
         <view class="more" data-id="{{item.id}}" catchtap="showItemActions">···</view>
       </view>
+      <view wx:if="{{overdueTotal > 5}}" class="view-all" bindtap="toggleOverdue">{{showAllOverdue ? '收起逾期任务' : '展开全部逾期任务'}}</view>
     </view>
   </view>
 
@@ -82,7 +85,7 @@
         <view class="check {{item.completed ? 'done' : ''}}" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
         <view class="task-main"><view class="task-title {{item.completed ? 'done' : ''}}">{{item.title}}</view><view class="task-sub">{{item.subText}}</view></view>
       </view>
-      <view class="view-all" wx:if="{{weekTotal > 5}}" bindtap="viewAllWeek">查看全部 {{weekTotal}} 项</view>
+      <view class="view-all" wx:if="{{weekRemaining > 5}}" bindtap="viewAllWeek">查看本周全部任务</view>
     </view>
   </view>
 
@@ -91,20 +94,22 @@
     <view class="card goals-card">
       <view class="goal-row" wx:for="{{yearTodos}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
         <view class="goal-head"><text class="goal-title">{{item.title}}</text><text class="goal-value">{{item.progress === null ? '—' : item.progress + '%'}}</text></view>
-        <view class="goal-meta"><view class="goal-dates"><text class="goal-calendar">▣</text><text>{{item.yearRangeText}}</text></view><text class="goal-control-hint">左减 · 右加</text></view>
+        <view class="goal-meta"><view class="goal-dates"><text class="goal-calendar">▣</text><text>{{item.yearRangeText}}</text></view><text class="goal-control-hint">每次调整 5%</text></view>
         <view class="progress-track interactive-progress goal-progress-{{index}}" data-id="{{item.id}}" data-index="{{index}}" catchtap="changeGoalProgress">
           <view class="progress-fill" style="width: {{item.displayProgress}}%"></view>
           <view class="progress-midline"></view>
           <text class="progress-minus">−</text>
           <text class="progress-plus">＋</text>
         </view>
+        <view class="goal-buttons"><button data-id="{{item.id}}" data-delta="-5" catchtap="adjustGoalProgress">− 5%</button><button data-id="{{item.id}}" data-delta="5" catchtap="adjustGoalProgress">＋ 5%</button></view>
       </view>
+      <view class="view-all" wx:if="{{yearRemaining > 3}}" bindtap="viewAllYear">查看本年全部目标</view>
     </view>
   </view>
 
   <view class="section completed-section" wx:if="{{completedToday.length}}">
-    <view class="section-head"><text class="section-title completed-heading">今日已完成</text><text class="section-meta">{{completedToday.length}} 项</text></view>
-    <view class="card completed-card">
+    <view class="section-head"><text class="section-title completed-heading">今日已完成 {{completedToday.length}} 项</text><button class="section-toggle" bindtap="toggleCompletedSection">{{showCompleted ? '收起' : '展开'}}</button></view>
+    <view wx:if="{{showCompleted}}" class="card completed-card">
       <view class="completed-row" wx:for="{{completedToday}}" wx:key="id" data-id="{{item.id}}" bindtap="openItem" bindlongpress="showItemActions">
         <view class="check done" data-id="{{item.id}}" catchtap="toggleCompleted">✓</view>
         <view class="task-main"><view class="task-title done">{{item.title}}</view><view class="task-sub">{{item.subText}}</view></view>
@@ -114,3 +119,4 @@
   </view>
 </view>
 <view class="fab" role="button" aria-label="快速新增" bindtap="quickAdd">＋</view>
+<view wx:if="{{undoVisible}}" class="undo-bar"><text>{{undoMessage}}</text><button bindtap="undoCompleted">撤销</button></view>

@@ -1,4 +1,8 @@
 <view class="page-shell inbox-shell">
+  <view wx:if="{{syncError}}" class="sync-warning">同步未完成：{{syncError}}。本机记录仍保留。</view>
+  <input class="search-input" value="{{query}}" placeholder="搜索标题或补充说明" bindinput="search" confirm-type="search" />
+  <view class="status-filters"><button class="{{status === 'all' ? 'active' : ''}}" data-status="all" bindtap="setStatus">全部</button><button class="{{status === 'pending' ? 'active' : ''}}" data-status="pending" bindtap="setStatus">未完成</button><button class="{{status === 'done' ? 'active' : ''}}" data-status="done" bindtap="setStatus">已完成</button></view>
+  <view wx:if="{{currentPeriod}}" class="period-note" bindtap="clearPeriod">{{scope === 'week' ? '仅显示本周任务' : '仅显示本年目标'}} · 点击查看所有时期</view>
   <scroll-view class="filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
     <view class="filter-list">
       <view wx:for="{{filters}}" wx:key="key" class="filter {{filter === item.key ? 'active' : ''}}" data-key="{{item.key}}" bindtap="setFilter">{{item.label}}</view>
@@ -8,7 +12,7 @@
     <view wx:for="{{scopes}}" wx:key="key" class="scope {{scope === item.key ? 'active' : ''}}" data-key="{{item.key}}" bindtap="setScope">{{item.label}}</view>
   </view>
 
-  <view class="list-toolbar"><text class="item-count">{{items.length}} 条记录</text><view class="sort-control" bindtap="chooseSort">{{sortLabel}} <text>⌄</text></view></view>
+  <view class="list-toolbar"><text class="item-count">{{totalCount}} 条记录</text><view class="sort-control" bindtap="chooseSort">{{sortLabel}} <text>⌄</text></view></view>
   <view class="card item-list" wx:if="{{items.length}}">
     <block wx:for="{{items}}" wx:key="id">
       <view class="date-group" wx:if="{{item.showDateGroup}}">{{item.dateGroupText}}</view>
@@ -23,6 +27,9 @@
       </view>
     </block>
   </view>
-  <view class="empty-state" wx:else><view class="empty-icon">⌁</view><view>这里还没有记录</view><view class="muted">点击右下角，快速记下第一件事</view></view>
+  <view class="empty-state" wx:else><view class="empty-icon">⌁</view><view>{{query || status !== 'all' ? '没有符合条件的记录' : '这里还没有记录'}}</view><view class="muted">调整筛选，或点击右下角新增</view></view>
+  <button wx:if="{{hasMore}}" class="load-more" bindtap="loadMore">加载更多</button>
 </view>
 <view class="fab" role="button" aria-label="快速新增" bindtap="quickAdd">＋</view>
+
+<view wx:if="{{undoVisible}}" class="undo-bar"><text>{{undoMessage}}</text><button bindtap="undoCompleted">撤销</button></view>

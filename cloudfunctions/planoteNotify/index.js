@@ -9,12 +9,13 @@ const OWNER_ID = 'sync_owner'
 const PAGE_SIZE = 100
 const DEFAULT_TEMPLATE_ID = 'WDghYFVSF0JgZSuRSYvL_6NstPBjfCOT8TvJNP5u7Jw'
 
-const getDocument = async (id) => {
+const getDocument = async (id, collection = items) => {
   try {
-    const result = await items.doc(id).get()
+    const result = await collection.doc(id).get()
     return result.data || null
   } catch (error) {
-    return null
+    if (error.code === 'DATABASE_DOCUMENT_NOT_EXIST' || /\bdocument\b(?![.])(?:\s+[\w'".-]+){0,3}\s+(?:not found|(?:does|is) not exists?|not exists?)\b|文档[^：:]*不存在/i.test(error.errMsg || error.message || '')) return null
+    throw error
   }
 }
 
@@ -30,6 +31,10 @@ const getAll = async (query) => {
   }
 }
 
+const transact = async (callback) => {
+  const result = await db.runTransaction(callback)
+  return result && Object.prototype.hasOwnProperty.call(result, 'result') ? result.result : result
+}
 const hash = (value) => crypto.createHash('sha256').update(String(value)).digest('hex')
 const grantDocumentId = (openid) => `sync_grant_${hash(openid).slice(0, 24)}`
 const keyDocumentId = (keyId) => `sync_key_${keyId}`
@@ -40,7 +45,7 @@ const hasSyncAccess = async (openid) => {
   const grant = await getDocument(grantDocumentId(openid))
   if (!grant || grant.recordType !== 'syncGrant' || grant.ownerOpenid !== openid) return false
   const key = await getDocument(keyDocumentId(grant.keyId))
-  return Boolean(key && key.recordType === 'syncKey' && !key.revokedAt && Number(key.expiresAt) > Date.now())
+  return Boolean(key && key.recordType === 'syncKey' && key.claimedBy === openid && !key.revokedAt && Number.isFinite(Number(key.expiresAt)) && (Number(key.expiresAt) === 0 || Number(key.expiresAt) > Date.now()))
 }
 
 const shanghaiNow = () => {
@@ -66,7 +71,8 @@ const summarize = (records, settings, today, currentTime) => {
   const active = records.filter((item) => item.recordType === 'item' && !item.completed && !item.deleted)
   const todayItems = active.filter((item) =>
     (item.type === 'todo' && item.taskScope === 'day' && item.date === today) ||
-    (item.type === 'chore' && item.date === today)
+    (item.type === 'chore' && item.date === today) ||
+    (item.type === 'schedule' && item.date === today)
   )
   const weekItems = active.filter((item) => item.type === 'todo' && item.taskScope === 'week' && item.weekStartDate <= today && item.weekEndDate >= today)
   const overdueItems = active.filter((item) => isOverdue(item, today, currentTime))
@@ -98,44 +104,59 @@ const summarize = (records, settings, today, currentTime) => {
 
 const updateSetting = (id, data) => items.doc(id).update({ data: { ...data, updatedAt: Date.now() } })
 
-const sendOne = async (settings, config, today, currentTime, requestedState = '') => {
+const sendOne = async (settings, config, today, currentTime, requestedState = '', test = false) => {
   if (!(await hasSyncAccess(settings.ownerOpenid))) {
     await updateSetting(settings._id, { enabled: false, subscriptionReady: false, lastSendStatus: 'access_invalid', lastSendError: '同步权限已过期或被收回' })
     return { ok: false, code: 'ACCESS_INVALID' }
   }
   const records = await getAll(items.where({ ownerOpenid: settings.ownerOpenid, recordType: 'item' }))
   const summary = summarize(records, settings, today, currentTime)
+  const deliveryId = 'notify_delivery_' + hash(settings.ownerOpenid + ':' + today).slice(0, 30)
+  const claimed = await transact(async (transaction) => {
+    const collection = transaction.collection('items')
+    const current = await getDocument(settings._id, collection)
+    const delivery = await getDocument(deliveryId, collection)
+    if (!current || !current.enabled || !current.subscriptionReady || delivery || (!test && (current.time > currentTime || current.lastSentDate === today || current.lastAttemptDate === today))) return false
+    await collection.doc(deliveryId).set({ data: { recordType: 'notifyDelivery', ownerOpenid: current.ownerOpenid, date: today, status: 'sending', createdAt: Date.now() } })
+    await collection.doc(settings._id).update({ data: { lastAttemptDate: today } })
+    // Reserve the subscription before sending. A later renewal is not overwritten.
+    if (!config.longTerm) {
+      const remaining = Math.max(0, (Number(current.subscriptionCredits) || 1) - 1)
+      await collection.doc(settings._id).update({ data: { subscriptionReady: remaining > 0, subscriptionCredits: remaining, updatedAt: Date.now() } })
+    }
+    return { subscriptionRevision: Number(current.subscriptionRevision) || 0 }
+  })
+  if (!claimed) return { ok: false, code: 'ALREADY_CLAIMED', message: '今天的提醒已发送或已在处理中，请勿重复发送' }
   try {
     await cloud.openapi.subscribeMessage.send({
-      touser: settings.ownerOpenid,
-      templateId: config.templateId,
-      page: 'pages/today/index',
-      miniprogramState: ['developer', 'trial', 'formal'].includes(requestedState) ? requestedState : (settings.miniprogramState || process.env.MINIPROGRAM_STATE || 'developer'),
+      touser: settings.ownerOpenid, templateId: config.templateId, page: 'pages/today/index',
+      miniprogramState: ['developer', 'trial', 'formal'].includes(requestedState) ? requestedState : (settings.miniprogramState || process.env.MINIPROGRAM_STATE || 'formal'),
       lang: 'zh_CN',
-      data: {
-        thing2: { value: summary.reminder },
-        thing31: { value: summary.taskName },
-        time38: { value: summary.deadlineTime },
-        thing8: { value: summary.urgency },
-        thing11: { value: summary.remark }
-      }
+      data: { thing2: { value: summary.reminder }, thing31: { value: summary.taskName }, time38: { value: summary.deadlineTime }, thing8: { value: summary.urgency }, thing11: { value: summary.remark } }
     })
-    await updateSetting(settings._id, {
-      lastSentDate: today, lastSentAt: Date.now(), lastSendStatus: 'success', lastSendError: '',
-      subscriptionReady: Boolean(config.longTerm)
-    })
-    return { ok: true }
   } catch (error) {
     const code = Number(error.errCode || error.errcode || 0)
-    await updateSetting(settings._id, {
-      lastSendStatus: 'failed', lastSendError: String(error.errMsg || error.message || '发送失败').slice(0, 120),
-      subscriptionReady: code === 43101 ? false : settings.subscriptionReady
+    const message = String(error.errMsg || error.message || '发送结果未知，请检查微信服务通知').slice(0, 120)
+    // Ambiguous network failures are not retried: WeChat may already have accepted the message.
+    await items.doc(deliveryId).update({ data: { status: code ? 'failed' : 'unknown', error: message, updatedAt: Date.now() } })
+    if (code === 43101) await transact(async (transaction) => {
+      const collection = transaction.collection('items')
+      const current = await getDocument(settings._id, collection)
+      if (current && (Number(current.subscriptionRevision) || 0) === claimed.subscriptionRevision) await collection.doc(settings._id).update({ data: { subscriptionReady: false, subscriptionCredits: 0 } })
     })
-    return { ok: false, code, message: String(error.errMsg || error.message || '发送失败').slice(0, 120) }
+    await updateSetting(settings._id, { lastSendStatus: code ? 'failed' : 'unknown', lastSendError: message })
+    return { ok: false, code, message }
   }
+  // Persistence failures after sending leave the delivery reservation in place.
+  await items.doc(deliveryId).update({ data: { status: 'success', updatedAt: Date.now() } })
+  await updateSetting(settings._id, { lastSentDate: today, lastSentAt: Date.now(), lastSendStatus: 'success', lastSendError: '' })
+  return { ok: true }
 }
 
 exports.main = async (event = {}) => {
+  const wxContext = cloud.getWXContext()
+  const timer = wxContext.SOURCE === 'wx_trigger' && !wxContext.OPENID && event.Type === 'Timer' && event.TriggerName === 'planoteDailyReminder'
+  if (event.action !== 'test' && !timer) return { ok: false, code: 'FORBIDDEN', message: '仅可信定时任务可以批量发送通知' }
   const storedConfig = await getDocument(CONFIG_ID)
   const config = storedConfig && storedConfig.recordType === 'notifyConfig'
     ? { ...storedConfig, templateId: storedConfig.templateId || DEFAULT_TEMPLATE_ID }
@@ -147,9 +168,9 @@ exports.main = async (event = {}) => {
     const setting = await getDocument(`notify_${hash(OPENID).slice(0, 24)}`)
     if (!setting || !setting.enabled) return { ok: false, code: 'NOT_ENABLED', message: '请先开启并保存每日通知' }
     if (!setting.subscriptionReady) return { ok: false, code: 'SUBSCRIPTION_REQUIRED', message: '没有可用的订阅额度，请先点击“立即续订”' }
-    return sendOne(setting, config, now.date, now.time, event.miniprogramState)
+    return sendOne(setting, config, now.date, now.time, event.miniprogramState, true)
   }
-  const settings = await getAll(items.where({ recordType: 'notifySettings', enabled: true, subscriptionReady: true }))
+  const settings = await getAll(items.where({ recordType: 'notifySettings', enabled: true, subscriptionReady: true, time: db.command.lte(now.time), lastAttemptDate: db.command.neq(now.date) }))
   const due = settings.filter((item) => item.time <= now.time && item.lastSentDate !== now.date)
   const results = []
   for (let index = 0; index < due.length; index += 5) {

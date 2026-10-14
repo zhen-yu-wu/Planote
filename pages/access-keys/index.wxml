@@ -8,10 +8,11 @@
     <view class="section-head"><text class="section-title">创建密钥</text></view>
     <view class="card form-card">
       <view class="field-row"><text class="field-label">用途备注</text><input value="{{label}}" maxlength="30" placeholder="例如：备用手机" bindinput="setLabel" /></view>
-      <picker mode="date" value="{{expiryDate}}" start="{{minDate}}" bindchange="setExpiryDate">
+      <view class="field-row"><text class="field-label">运营期间持续有效</text><switch checked="{{noExpiry}}" color="#397356" bindchange="setNoExpiry" /></view>
+      <picker wx:if="{{!noExpiry}}" mode="date" value="{{expiryDate}}" start="{{minDate}}" bindchange="setExpiryDate">
         <view class="field-row"><text class="field-label">到期日期</text><view class="picker-value">{{expiryDate}} <text>›</text></view></view>
       </picker>
-      <picker mode="time" value="{{expiryTime}}" bindchange="setExpiryTime">
+      <picker wx:if="{{!noExpiry}}" mode="time" value="{{expiryTime}}" bindchange="setExpiryTime">
         <view class="field-row"><text class="field-label">到期时间</text><view class="picker-value">{{expiryTime}} <text>›</text></view></view>
       </picker>
       <button class="create-button" loading="{{creating}}" disabled="{{creating}}" bindtap="createKey">创建分发密钥</button>

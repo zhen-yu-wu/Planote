@@ -12,11 +12,15 @@
     </view>
   </view>
 
+  <view class="import-modes">
+    <button class="mode-button {{mode === 'merge' ? 'selected' : ''}}" data-mode="merge" bindtap="setMode">作为新事项合并</button>
+    <button class="mode-button {{mode === 'local' ? 'selected' : ''}}" data-mode="local" bindtap="setMode">仅恢复本机</button>
+  </view>
   <button class="paste-button" bindtap="pasteFromClipboard">从剪贴板粘贴</button>
-  <button class="import-button {{!content ? 'disabled' : ''}}" bindtap="importBackup">检查并导入</button>
+  <button class="import-button" loading="{{importing}}" disabled="{{!content || importing}}" bindtap="importBackup">检查并导入</button>
 
   <view class="warning-card">
     <view class="warning-title">导入前请注意</view>
-    <view class="warning-text">导入会替换当前设备中的全部事项。系统会先检查备份格式，并在真正导入前再次向你确认。</view>
+    <view class="warning-text">{{mode === 'merge' ? '合并会保留原有事项，备份作为新记录加入，可继续同步。重复导入会产生副本。' : '仅恢复本机会覆盖本机事项并暂停同步，云端保持原样。'}}操作前保留的快照可在“我的”中恢复。备份包含你的事项内容，请妥善保管。</view>
   </view>
 </view>

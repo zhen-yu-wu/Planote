@@ -1,4 +1,6 @@
 <view class="page-shell calendar-shell">
+  <view wx:if="{{year !== 2026}}" class="sync-warning">调休安排与农历节日目前更新至 2026 年，所选年份尚未配置。</view>
+  <view wx:if="{{syncError}}" class="sync-warning">同步未完成：{{syncError}}。本机记录仍保留。</view>
   <view class="calendar-card card">
     <view class="month-head"><view class="month-arrow" bindtap="previousMonth">‹</view><view class="month-title">{{title}}</view><view class="month-arrow" bindtap="nextMonth">›</view></view>
     <view class="week-head"><text>日</text><text>一</text><text>二</text><text>三</text><text>四</text><text>五</text><text>六</text></view>
@@ -28,3 +30,5 @@
   </view>
 </view>
 <view class="fab" role="button" aria-label="快速新增" bindtap="quickAdd">＋</view>
+
+<view wx:if="{{undoVisible}}" class="undo-bar"><text>{{undoMessage}}</text><button bindtap="undoCompleted">撤销</button></view>

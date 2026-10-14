@@ -1,19 +1,24 @@
 const itemService = require('../../services/itemService')
-const { parseDate, WEEKDAYS } = require('../../utils/date')
+const { parseDate, WEEKDAYS, combineDateTime } = require('../../utils/date')
+const actions = require('../../services/pageActions')
 
 Page({
   data: {
     dateText: '', greeting: '', summaryText: '', handledToday: 0, todayTotal: 0, todayProgress: 0,
     scheduleDone: 0, scheduleTotal: 0, choreDone: 0, choreTotal: 0,
     focus: [], overdueTodos: [], schedules: [], chores: [], dayTodos: [], weekTodos: [], yearTodos: [], completedToday: [], completingId: '',
-    dayDone: 0, dayTotal: 0, weekDone: 0, weekTotal: 0
+    dayDone: 0, dayTotal: 0, weekDone: 0, weekTotal: 0, showAllOverdue: false, showCompleted: false
   },
 
   onShow() {
     this.loadDashboard()
-    itemService.sync().then((result) => { if (!result.skipped) this.loadDashboard() }).catch(() => {})
+    itemService.sync().then((result) => { if (!result.skipped) this.loadDashboard() }).catch(() => {}).finally(() => actions.syncStatus(this))
   },
-  onPullDownRefresh() { this.loadDashboard(); wx.stopPullDownRefresh() },
+  onPullDownRefresh() { return actions.refresh(this, this.loadDashboard) },
+  onUnload() { actions.cleanup(this) },
+  undoCompleted() { actions.undo(this) },
+  toggleOverdue() { this.setData({ showAllOverdue: !this.data.showAllOverdue }); this.loadDashboard() },
+  toggleCompletedSection() { this.setData({ showCompleted: !this.data.showCompleted }) },
 
   loadDashboard() {
     const now = new Date()
@@ -50,7 +55,8 @@ Page({
       choreDone,
       choreTotal: dashboard.todayChores.length,
       focus: dashboard.focus.map(decorate),
-      overdueTodos: remainingOverdueTodos.map(decorate),
+      overdueTodos: (this.data.showAllOverdue ? remainingOverdueTodos : remainingOverdueTodos.slice(0, 5)).map(decorate),
+      overdueTotal: remainingOverdueTodos.length,
       schedules: remainingSchedules.map(decorate),
       chores: dashboard.pendingChores.map(decorate),
       dayTodos: remainingDayTodos.map(decorate),
@@ -60,7 +66,8 @@ Page({
       dayDone,
       dayTotal: dashboard.dayTodos.length,
       weekDone: dashboard.weekTodos.filter((item) => item.completed).length,
-      weekTotal: dashboard.weekTodos.length
+      weekTotal: dashboard.weekTodos.length,
+      weekRemaining: remainingWeekTodos.length, yearRemaining: activeYearTodos.length, isEmpty: itemService.getAll().length === 0
     })
   },
 
@@ -70,7 +77,8 @@ Page({
     if (item.type === 'schedule') subText = `${item.startTime || '全天'}${item.endTime ? ` - ${item.endTime}` : ''}`
     else if (item.type === 'chore') subText = item.date && item.date < today ? `之前未完成 · ${item.date}` : '今日琐事'
     else if (item.deadlineDate) {
-      const overdue = item.deadlineDate < today && !item.completed
+      const deadline = combineDateTime(item.deadlineDate, item.deadlineTime, true)
+      const overdue = deadline && deadline.getTime() < Date.now() && !item.completed
       subText = overdue ? `已逾期 · ${item.deadlineDate}` : `截止 ${item.deadlineDate === today ? '今天' : item.deadlineDate}${item.deadlineTime ? ` ${item.deadlineTime}` : ''}`
       statusClass = overdue ? 'pill-red' : item.deadlineDate === today ? 'pill-orange' : 'pill-green'
     } else if (item.taskScope === 'day' && item.date && item.date < today && !item.completed) {
@@ -94,30 +102,7 @@ Page({
   },
 
   toggleCompleted(event) {
-    const id = event.currentTarget.dataset.id
-    const item = itemService.getById(id)
-    if (!item) return
-    if (item.completed) {
-      itemService.toggleCompleted(id)
-      wx.showToast({ title: '已恢复', icon: 'none' })
-      this.loadDashboard()
-      return
-    }
-    wx.showModal({
-      title: '确认完成？',
-      content: `“${item.title}”将移入今日已完成。`,
-      confirmText: '完成',
-      confirmColor: '#2F6B4F',
-      success: ({ confirm }) => {
-        if (!confirm) return
-        this.setData({ completingId: id })
-        setTimeout(() => {
-          itemService.toggleCompleted(id)
-          this.setData({ completingId: '' })
-          this.loadDashboard()
-        }, 460)
-      }
-    })
+    actions.toggle(this, event.currentTarget.dataset.id, this.loadDashboard)
   },
 
   changeGoalProgress(event) {
@@ -140,6 +125,14 @@ Page({
     }).exec()
   },
 
+  adjustGoalProgress(event) {
+    try {
+      const item = itemService.getById(event.currentTarget.dataset.id)
+      if (!item) return
+      itemService.save({ ...item, progress: Math.max(0, Math.min(100, (item.progress || 0) + Number(event.currentTarget.dataset.delta))) })
+      this.loadDashboard()
+    } catch (error) { wx.showToast({ title: error.message, icon: 'none' }) }
+  },
   openItem(event) { wx.navigateTo({ url: `/pages/editor/index?id=${event.currentTarget.dataset.id}` }) },
 
   showItemActions(event) {
@@ -166,5 +159,7 @@ Page({
     wx.showActionSheet({ itemList: choices, success: ({ tapIndex }) => wx.navigateTo({ url: `/pages/editor/index?${params[tapIndex]}` }) })
   },
 
-  viewAllWeek() { wx.switchTab({ url: '/pages/inbox/index' }) }
+  openFirstTask() { wx.navigateTo({ url: '/pages/editor/index?type=todo&scope=day' }) },
+  viewAllWeek() { getApp().globalData.inboxFilter = { filter: 'todo', scope: 'week', currentPeriod: true }; wx.switchTab({ url: '/pages/inbox/index' }) },
+  viewAllYear() { getApp().globalData.inboxFilter = { filter: 'todo', scope: 'year', currentPeriod: true }; wx.switchTab({ url: '/pages/inbox/index' }) }
 })

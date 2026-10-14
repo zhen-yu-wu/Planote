@@ -1,0 +1,9 @@
+<view class="page-shell privacy-shell">
+  <view class="card privacy-card"><view class="section-title">你的记录保存在哪里</view><view class="privacy-copy">事项内容、任务日期与完成状态默认保存在当前设备。获得同步权限并开启同步后，会通过微信云开发上传和合并记录；云端使用当前微信账号的身份标识区分你的数据。云同步不提供端到端加密。</view></view>
+  <view class="card privacy-card"><view class="section-title">通知与维护</view><view class="privacy-copy">开启提醒时，云端保存提醒时间、内容范围、订阅状态与发送结果，用于发送微信服务通知。通知使用最近成功同步的事项，因此同步关闭或失败时可能不是最新内容。同步密钥、授权记录与验证次数用于管理服务权限。</view></view>
+  <view class="card privacy-card"><view class="section-title">备份、恢复与删除</view><view class="privacy-copy">导出会将记录复制到剪贴板，请妥善保存，不要发给不信任的人。导入与清空前会保存一份本机恢复快照。“仅恢复本机”会暂停同步；重新同步可能合并云端记录。“清空本机已知事项”只删除已加载的事项，并在开启同步时删除云端对应记录，不能替代账户数据删除。如需删除云端授权、通知设置或其他账户关联数据，请联系维护者处理。</view></view>
+  <view class="card privacy-card"><view class="section-title">自主支持</view><view class="privacy-copy">日常记录、查看与完成事项不会自动展示广告。若未来提供广告支持入口，由你自主选择是否打开。支持与反馈通过开发者联系入口进行。</view></view>
+  <button class="privacy-button" bindtap="openContract">查看微信平台隐私保护指引</button>
+  <button class="privacy-button secondary" bindtap="contact">联系维护者处理数据请求</button>
+  <button class="privacy-button danger" bindtap="eraseLocal">删除本机事项及备份</button>
+</view>

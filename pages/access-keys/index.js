@@ -3,18 +3,20 @@ const itemService = require('../../services/itemService')
 const pad = (value) => String(value).padStart(2, '0')
 const dateValue = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 const timeText = (timestamp) => {
+  if (Number(timestamp) === 0) return '运营期间持续有效'
   const date = new Date(timestamp)
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 Page({
-  data: { label: '', expiryDate: '', expiryTime: '23:59', minDate: '', keys: [], loading: true, creating: false },
+  data: { label: '', expiryDate: '', expiryTime: '23:59', noExpiry: true, minDate: '', keys: [], loading: true, creating: false },
   onLoad() {
     const today = new Date()
     const defaultExpiry = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
     this.setData({ minDate: dateValue(today), expiryDate: dateValue(defaultExpiry) })
   },
   onShow() { this.loadKeys() },
+  setNoExpiry(event) { this.setData({ noExpiry: event.detail.value }) },
   setLabel(event) { this.setData({ label: event.detail.value }) },
   setExpiryDate(event) { this.setData({ expiryDate: event.detail.value }) },
   setExpiryTime(event) { this.setData({ expiryTime: event.detail.value }) },
@@ -24,7 +26,7 @@ Page({
       const now = Date.now()
       const keys = (result.keys || []).map((item) => {
         const revoked = Boolean(item.revokedAt)
-        const expired = !revoked && Number(item.expiresAt) <= now
+        const expired = !revoked && Number(item.expiresAt) !== 0 && Number(item.expiresAt) <= now
         return {
           ...item,
           createdText: timeText(item.createdAt),
@@ -41,8 +43,8 @@ Page({
   },
   createKey() {
     if (this.data.creating) return
-    const expiresAt = new Date(`${this.data.expiryDate}T${this.data.expiryTime}:00`).getTime()
-    if (!expiresAt || expiresAt <= Date.now()) return wx.showToast({ title: '请选择未来的过期时间', icon: 'none' })
+    const expiresAt = this.data.noExpiry ? 0 : new Date(`${this.data.expiryDate}T${this.data.expiryTime}:00`).getTime()
+    if (!this.data.noExpiry && (!expiresAt || expiresAt <= Date.now())) return wx.showToast({ title: '请选择未来的过期时间', icon: 'none' })
     const label = this.data.label.trim() || '未命名密钥'
     wx.showModal({
       title: '创建分发密钥？',

@@ -5,6 +5,7 @@ const defaultSettings = {
   time: '08:00',
   scopes: { today: true, week: true, overdue: true },
   subscriptionReady: false,
+  subscriptionCredits: 0,
   lastSentDate: '',
   lastSendStatus: ''
 }
@@ -63,7 +64,7 @@ Page({
     if (!enabled) {
       this.setData({ 'settings.enabled': false })
       this.persist(false).then(() => wx.showToast({ title: '已关闭通知', icon: 'none' }))
-        .catch((error) => wx.showModal({ title: '关闭失败', content: error.message || '请稍后再试', showCancel: false }))
+        .catch((error) => { this.setData({ 'settings.enabled': true }); wx.showModal({ title: '关闭失败', content: error.message || '请稍后再试', showCancel: false }) })
       return
     }
     this.setData({ 'settings.enabled': false })
@@ -106,6 +107,7 @@ Page({
         save.then(() => itemService.markNotificationSubscribed()).then(() => {
           this.setData({ 'settings.enabled': enableAfter ? true : this.data.settings.enabled, 'settings.subscriptionReady': true })
           wx.showToast({ title: enableAfter ? '通知已开启' : '已续订下一次提醒', icon: 'success' })
+          this.loadSettings()
         }).catch((error) => wx.showModal({ title: '订阅保存失败', content: error.message || '请稍后再试', showCancel: false }))
       },
       fail: (error) => wx.showModal({ title: '无法申请通知', content: error.errMsg || '请在微信设置中检查订阅消息权限', showCancel: false }),

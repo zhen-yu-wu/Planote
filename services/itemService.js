@@ -1,4 +1,5 @@
 const repository = require('../repositories/itemRepository')
+const { validateItem } = require('../utils/itemValidation')
 const { toDateString, getWeekRange, combineDateTime } = require('../utils/date')
 
 const scheduleSync = () => {
@@ -14,7 +15,8 @@ const defaults = {
   year: null, yearStartDate: '', yearEndDate: '', progress: null
 }
 
-const id = () => `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
+let sequence = 0
+const id = () => `${Date.now().toString(36)}_${(++sequence).toString(36)}_${Math.random().toString(36).slice(2, 10)}`
 const normalize = (item) => {
   const normalized = { ...defaults, ...item }
   if (normalized.type === 'todo' && normalized.taskScope === 'year') {
@@ -32,10 +34,11 @@ const getById = (itemId) => {
 
 const save = (draft) => {
   const now = Date.now()
-  const item = normalize({ ...draft, updatedAt: now })
+  let item = normalize({ ...draft, updatedAt: now })
   const previous = item.id ? repository.getById(item.id) : null
-  if (!item.title.trim()) throw new Error('请填写标题')
+  if (typeof item.title !== 'string' || !item.title.trim()) throw new Error('请填写标题')
   item.title = item.title.trim()
+  if (typeof item.content !== 'string') throw new Error('补充说明格式无效')
   item.content = item.content.trim()
   if (item.type === 'todo' && !item.taskScope) item.taskScope = 'day'
   if (item.type === 'todo' && item.taskScope === 'week') {
@@ -57,13 +60,15 @@ const save = (draft) => {
   }
   if (item.completed && (!previous || !previous.completed)) item.completedAt = now
   if (!item.completed) item.completedAt = null
-  if (item.id) {
+  item.updatedAt = Math.max(now, (previous && previous.updatedAt || 0) + 1)
+  const existing = Boolean(item.id)
+  if (!item.id) { item.id = id(); item.createdAt = now }
+  item = validateItem(item)
+  if (existing) {
     const saved = repository.update(item)
     scheduleSync()
     return saved
   }
-  item.id = id()
-  item.createdAt = now
   const saved = repository.add(item)
   scheduleSync()
   return saved
@@ -86,44 +91,52 @@ const remove = (itemId) => {
 const clearAll = () => { repository.clear(); scheduleSync() }
 
 const prepareImport = (raw) => {
+  if (typeof raw === 'string' && raw.length > 4 * 1024 * 1024) throw new Error('备份过大，请分批导入（最多 4MB 文本）')
   let payload
-  try {
-    payload = typeof raw === 'string' ? JSON.parse(raw) : raw
-  } catch (error) {
-    throw new Error('剪贴板内容不是有效的 JSON 备份')
-  }
+  try { payload = typeof raw === 'string' ? JSON.parse(raw) : raw }
+  catch (error) { throw new Error('备份不是有效的 JSON') }
   const source = Array.isArray(payload) ? payload : payload && payload.items
-  if (!Array.isArray(source)) throw new Error('备份中没有找到事项数据')
-  const allowedTypes = ['idea', 'todo', 'chore', 'schedule']
-  const seenIds = new Set()
-  const now = Date.now()
+  if (!Array.isArray(source) || source.length > 10000) throw new Error('备份必须包含事项数组，最多 10000 条')
+  const seen = new Set()
   return source.map((entry, index) => {
-    if (!entry || typeof entry !== 'object') throw new Error(`第 ${index + 1} 条事项格式无效`)
-    if (!allowedTypes.includes(entry.type)) throw new Error(`第 ${index + 1} 条事项类型无效`)
-    if (typeof entry.title !== 'string' || !entry.title.trim()) throw new Error(`第 ${index + 1} 条事项缺少标题`)
-    let itemId = typeof entry.id === 'string' && entry.id ? entry.id : id()
-    if (seenIds.has(itemId)) itemId = id()
-    seenIds.add(itemId)
-    const urgency = Math.max(1, Math.min(3, Number(entry.urgency) || 2))
-    const importance = Math.max(1, Math.min(3, Number(entry.importance) || 2))
-    return normalize({
-      ...entry,
-      id: itemId,
-      title: entry.title.trim(),
-      content: typeof entry.content === 'string' ? entry.content : '',
-      urgency,
-      importance,
-      completed: Boolean(entry.completed),
-      createdAt: Number(entry.createdAt) || now,
-      updatedAt: Number(entry.updatedAt) || now
-    })
+    try {
+      const item = validateItem(normalize({ ...entry, id: entry && entry.id || id() }))
+      if (seen.has(item.id)) throw new Error('事项 ID 重复')
+      seen.add(item.id)
+      return item
+    } catch (error) { throw new Error('第 ' + (index + 1) + ' 条：' + error.message) }
   })
 }
-
-const importItems = (items) => {
-  if (!Array.isArray(items)) throw new Error('导入数据无效')
-  repository.replaceAll(items)
-  scheduleSync()
+const importItems = (incoming, { mode = 'merge' } = {}) => {
+  if (!['merge', 'local'].includes(mode)) throw new Error('导入方式无效')
+  const items = prepareImport(incoming)
+  const now = Date.now()
+  if (mode === 'local') {
+    require('./syncService').pauseForRestore()
+    repository.saveRecovery()
+    repository.replaceAll(items, { localOnly: true })
+  } else {
+    // Imported records get new identities, including previously deleted items.
+    // Cloud records are never silently overwritten by an old backup.
+    const restored = items.map((item) => ({ ...item, id: id(), updatedAt: now }))
+    repository.saveRecovery()
+    repository.replaceAll([...repository.getAll(), ...restored])
+    scheduleSync()
+  }
+  return items.length
+}
+const getRecovery = () => repository.getRecovery()
+const forgetLocalData = () => {
+  require('./syncService').pauseForRestore()
+  repository.forgetLocalData()
+}
+const restoreRecovery = () => {
+  const recovery = repository.getRecovery()
+  if (!recovery || !recovery.state || !Array.isArray(recovery.state.items)) throw new Error('没有可恢复的快照')
+  const items = prepareImport(recovery.state.items)
+  require('./syncService').pauseForRestore()
+  repository.saveRecovery()
+  repository.replaceAll(items, { localOnly: true })
   return items.length
 }
 
@@ -284,7 +297,8 @@ const getDashboard = (now = new Date()) => {
 
   const overdueTodos = active.filter((item) => {
     if (item.type !== 'todo') return false
-    if (item.deadlineDate && item.deadlineDate < today) return true
+    const deadline = combineDateTime(item.deadlineDate, item.deadlineTime, true)
+    if (deadline && deadline.getTime() < now.getTime()) return true
     if (item.taskScope === 'day') return Boolean(item.date && item.date < today)
     if (item.taskScope === 'week') return Boolean(item.weekEndDate && item.weekEndDate < today)
     if (item.taskScope === 'year') return Boolean(item.yearEndDate && item.yearEndDate < today)
@@ -315,7 +329,7 @@ const getDashboard = (now = new Date()) => {
 }
 
 module.exports = {
-  getAll, getById, save, remove, clearAll, prepareImport, importItems, inboxDate, sortForInbox, toggleCompleted, getDashboard, priorityScore,
+  getAll, getById, save, remove, clearAll, prepareImport, importItems, getRecovery, restoreRecovery, forgetLocalData, inboxDate, sortForInbox, toggleCompleted, getDashboard, priorityScore,
   sync, getSyncMeta, getSyncSettings, setAutoSync, refreshSyncAccess, verifySyncAccess, listSyncAccessKeys, createSyncAccessKey, revokeSyncAccessKey,
   getNotificationSettings, saveNotificationSettings, markNotificationSubscribed, saveNotificationTemplate, testNotification
 }

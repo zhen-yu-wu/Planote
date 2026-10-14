@@ -11,20 +11,20 @@
 .field-row, .priority-row { display: flex; align-items: center; justify-content: space-between; min-height: 96rpx; padding: 0 24rpx; }
 .field-row + .field-row, .priority-row + .priority-row, picker + picker, picker + .field-row { border-top: 1rpx solid #eff1ec; }
 .field-value { color: #397356; font-size: 26rpx; }
-.field-value.plain { color: #858b82; font-size: 23rpx; }
+.field-value.plain { color: #858b82; font-size: 24rpx; }
 .level-group { display: flex; gap: 10rpx; }
-.level { min-width: 64rpx; padding: 10rpx 4rpx; border-radius: 12rpx; background: #f0f2ee; color: #92978f; text-align: center; font-size: 23rpx; }
+.level { min-width: 64rpx; padding: 10rpx 4rpx; border-radius: 12rpx; background: #f0f2ee; color: #697164; text-align: center; font-size: 24rpx; }
 .level.selected { font-weight: 650; }
 .level-1 { background: #e8f2eb; color: #47765c; }
-.level-2 { background: #fff1dc; color: #a96822; }
+.level-2 { background: #fff1dc; color: #697164; }
 .level-3 { background: #ffebe6; color: #b94e39; }
 .progress-field { padding: 24rpx 18rpx 16rpx 24rpx; border-top: 1rpx solid #eff1ec; }
 .year-range-row { display: flex; align-items: center; min-height: 112rpx; padding: 0 20rpx; border-top: 1rpx solid #eff1ec; }
 .range-picker { min-width: 0; flex: 1; }
 .range-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 17rpx 4rpx; border-radius: 16rpx; background: #f5f7f3; }
-.range-label { color: #90968d; font-size: 20rpx; }
-.range-value { margin-top: 6rpx; color: #397356; font-size: 23rpx; font-weight: 600; }
-.range-arrow { margin: 0 14rpx; color: #a2a89f; font-size: 26rpx; }
+.range-label { color: #697164; font-size: 24rpx; }
+.range-value { margin-top: 6rpx; color: #397356; font-size: 24rpx; font-weight: 600; }
+.range-arrow { margin: 0 14rpx; color: #697164; font-size: 26rpx; }
 .progress-label { display: flex; justify-content: space-between; padding-right: 8rpx; }
 .progress-label text:last-child { color: #397356; }
 .save-button { width: 420rpx; margin: 52rpx auto 0; border-radius: 44rpx; background: #2f6b4f; color: white; font-size: 28rpx; font-weight: 650; line-height: 88rpx; box-shadow: 0 12rpx 28rpx rgba(47, 107, 79, .24); }

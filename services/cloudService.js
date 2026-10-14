@@ -25,7 +25,27 @@ const call = (action, data = {}) => callFunction(FUNCTION_NAME, action, data)
 
 const getAccessStatus = () => call('status')
 const verifyAccessKey = (key) => call('verify', { key })
-const syncItems = (records) => call('sync', { records })
+const syncItems = async (records, { since = 0 } = {}) => {
+  let uploaded = 0
+  const received = new Map()
+  // Every batch stays below the function payload limit, including deletion markers.
+  for (let index = 0; index < Math.max(1, records.length); index += 100) {
+    const result = await call('sync', { records: records.slice(index, index + 100), uploadOnly: true, migrateLegacy: index === 0 })
+    uploaded += result.uploaded || 0
+    ;(result.records || []).forEach((record) => received.set(record.id, record))
+  }
+  let serverTime = 0
+  let cursor = ''
+  do {
+    const result = await call('pull', { cursor, since })
+    if (!Array.isArray(result.records)) throw new Error('同步响应不完整，本机数据未被替换')
+    if (!serverTime) serverTime = result.serverTime || 0
+    result.records.forEach((record) => received.set(record.id, record))
+    if (result.hasMore && (!result.cursor || result.cursor === cursor)) throw new Error('同步分页异常，本机数据未被替换')
+    cursor = result.hasMore ? result.cursor : ''
+  } while (cursor)
+  return { records: Array.from(received.values()), uploaded, serverTime, full: !since }
+}
 const listAccessKeys = () => call('listKeys')
 const createAccessKey = (label, expiresAt) => call('createKey', { label, expiresAt })
 const revokeAccessKey = (keyId) => call('revokeKey', { keyId })

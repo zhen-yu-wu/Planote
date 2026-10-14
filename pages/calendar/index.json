@@ -1,4 +1,5 @@
 {
   "navigationBarTitleText": "日历",
-  "backgroundColor": "#F6F7F2"
+  "backgroundColor": "#F6F7F2",
+  "enablePullDownRefresh": true
 }

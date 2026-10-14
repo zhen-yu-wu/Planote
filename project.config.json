@@ -1,7 +1,11 @@
 {
   "description": "我的日序 - 个人任务、日程与目标管理",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "tests" },
+      { "type": "folder", "value": "scripts" },
+      { "type": "suffix", "value": ".md" }
+    ],
     "include": []
   },
   "setting": {
